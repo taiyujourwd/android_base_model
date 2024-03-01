@@ -2,8 +2,11 @@ package com.benwu.baselib.activity
 
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -35,11 +38,19 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
     override val binding get() = _binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // 解決當使用者撤銷權限 app重啟不會回首頁
         if (mApplication.isStartWithHome()) { // app重啟畫面 == 首頁
             _binding = bindViewBinding(layoutInflater).also { setContentView(it.root) }
+
+            ViewCompat.setOnApplyWindowInsetsListener(_binding.root) { v, insets ->
+                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                insets
+            }
+
             intent.extras?.also { getBundle(it) }
             initView()
             getData()
