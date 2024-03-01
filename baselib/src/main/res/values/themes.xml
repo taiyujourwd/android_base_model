@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- Base application theme. -->
     <style name="Theme.BaseLib" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <item name="android:statusBarColor">@color/transparent</item>
         <item name="android:overScrollMode">never</item>
         <item name="android:clipToPadding">false</item>
-        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.BaseLib.Toolbar">
@@ -24,5 +21,4 @@
     <style name="Style.Toolbar.Button.Navigation" parent="Widget.AppCompat.Toolbar.Button.Navigation">
         <item name="android:tint">?colorOnSurface</item>
     </style>
-
 </resources>

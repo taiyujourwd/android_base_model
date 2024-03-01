@@ -1,6 +1,6 @@
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    alias(libs.plugins.androidLibrary)
+    alias(libs.plugins.jetbrainsKotlinAndroid)
 }
 
 android {
@@ -38,48 +38,48 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.11.0")
-    testImplementation("junit:junit:4.13.2")
-    androidTestImplementation("androidx.test.ext:junit:1.1.5")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
 
-    api("androidx.recyclerview:recyclerview:1.3.2")
-    api("androidx.viewpager2:viewpager2:1.0.0")
-    api("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-    api("androidx.activity:activity-ktx:1.8.2")
-    api("androidx.fragment:fragment-ktx:1.6.2")
+    api(libs.androidx.activity.ktx)
+    api(libs.androidx.fragment.ktx)
+    api(libs.androidx.recyclerview)
+    api(libs.androidx.viewpager2)
+    api(libs.androidx.swiperefreshlayout)
 
     // lifecycle
-    api("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
-    api("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
-    api("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+    api(libs.androidx.lifecycle.viewmodel.ktx)
+    api(libs.androidx.lifecycle.livedata.ktx)
+    api(libs.androidx.lifecycle.runtime.ktx)
 
     // dataStore
-    api("androidx.datastore:datastore-preferences:1.0.0")
-
-    // retrofit
-    api("com.squareup.retrofit2:retrofit:2.9.0")
-    api("com.squareup.retrofit2:converter-gson:2.9.0")
-
-    // okhttp
-    api(platform("com.squareup.okhttp3:okhttp-bom:4.12.0"))
-    api("com.squareup.okhttp3:okhttp")
-    api("com.squareup.okhttp3:logging-interceptor")
-
-    // gson
-    api("com.google.code.gson:gson:2.10.1")
-
-    // glide
-    api("com.github.bumptech.glide:glide:4.16.0")
-
-    // lottie
-    api("com.airbnb.android:lottie:6.3.0")
+    api(libs.androidx.datastore.preferences)
 
     // paging
-    api("androidx.paging:paging-runtime-ktx:3.2.1")
+    api(libs.androidx.paging.runtime.ktx)
 
+    // retrofit
+    api(libs.retrofit)
+    api(libs.retrofit.converter.gson)
+
+    // okhttp
+    api(platform(libs.okhttp.bom))
+    api(libs.okhttp)
+    api(libs.okhttp.logging.interceptor)
+
+    // gson
+    api(libs.gson)
+
+    // glide
+    api(libs.glide)
+
+    // lottie
+    api(libs.lottie)
+    
     // autoSize
-    api("com.github.JessYanCoding:AndroidAutoSize:v1.2.1")
+    api(libs.androidAutoSize)
 }
