@@ -88,6 +88,43 @@ import java.util.zip.ZipInputStream
 /**
  * 設置角邊背景
  *
+ * @param topLeftRadius 半徑(左上)
+ * @param topRightRadius 半徑(右上)
+ * @param bottomLeftRadius 半徑(左下)
+ * @param bottomRightRadius 半徑(右下)
+ * @param fillColor 填色
+ * @param strokeWidth 框寬度
+ * @param strokeColor 框顏色
+ * @param cornerFamily 角邊樣式
+ */
+fun View.setBackgroundCorner(
+    topLeftRadius: Float = 0f,
+    topRightRadius: Float = 0f,
+    bottomLeftRadius: Float = 0f,
+    bottomRightRadius: Float = 0f,
+    @ColorInt fillColor: Int = 0,
+    strokeWidth: Float = 0f,
+    @ColorInt strokeColor: Int = 0,
+    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED,
+    drawable: ((drawable: MaterialShapeDrawable) -> Unit)? = null
+) {
+    val shape = ShapeAppearanceModel().toBuilder()
+        .setTopLeftCorner(cornerFamily, topLeftRadius)
+        .setTopRightCorner(cornerFamily, topRightRadius)
+        .setBottomLeftCorner(cornerFamily, bottomLeftRadius)
+        .setBottomRightCorner(cornerFamily, bottomRightRadius)
+        .build()
+
+    background = MaterialShapeDrawable(shape).also {
+        it.fillColor = ColorStateList.valueOf(fillColor)
+        it.setStroke(strokeWidth, strokeColor)
+        drawable?.invoke(it)
+    }
+}
+
+/**
+ * 設置角邊背景
+ *
  * @param radius 半徑
  * @param fillColor 填色
  * @param strokeWidth 框寬度
@@ -102,13 +139,17 @@ fun View.setBackgroundCorner(
     @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED,
     drawable: ((drawable: MaterialShapeDrawable) -> Unit)? = null
 ) {
-    val shape = ShapeAppearanceModel().toBuilder().setAllCorners(cornerFamily, radius).build()
-
-    background = MaterialShapeDrawable(shape).also {
-        it.fillColor = ColorStateList.valueOf(fillColor)
-        it.setStroke(strokeWidth, strokeColor)
-        drawable?.invoke(it)
-    }
+    setBackgroundCorner(
+        radius,
+        radius,
+        radius,
+        radius,
+        fillColor,
+        strokeWidth,
+        strokeColor,
+        cornerFamily,
+        drawable
+    )
 }
 //endregion
 

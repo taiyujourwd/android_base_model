@@ -6,19 +6,4 @@
         <item name="android:overScrollMode">never</item>
         <item name="android:clipToPadding">false</item>
     </style>
-
-    <style name="Theme.BaseLib.Toolbar">
-        <item name="toolbarStyle">@style/Style.Toolbar</item>
-        <item name="toolbarNavigationButtonStyle">@style/Style.Toolbar.Button.Navigation</item>
-    </style>
-
-    <style name="Style.Toolbar" parent="Widget.Material3.Toolbar.Surface">
-        <item name="titleTextColor">?colorOnSurface</item>
-        <item name="actionMenuTextColor">?colorOnSurface</item>
-        <item name="android:elevation">0dp</item>
-    </style>
-
-    <style name="Style.Toolbar.Button.Navigation" parent="Widget.AppCompat.Toolbar.Button.Navigation">
-        <item name="android:tint">?colorOnSurface</item>
-    </style>
 </resources>

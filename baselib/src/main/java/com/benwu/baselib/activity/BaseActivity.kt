@@ -1,10 +1,12 @@
 package com.benwu.baselib.activity
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -46,8 +48,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
             _binding = bindViewBinding(layoutInflater).also { setContentView(it.root) }
 
             ViewCompat.setOnApplyWindowInsetsListener(_binding.root) { v, insets ->
-                val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                setViewPadding(v, insets.getInsets(WindowInsetsCompat.Type.systemBars()))
                 insets
             }
 
@@ -61,10 +62,16 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
                     onBack()
                 }
             })
+
+            _binding.root.setOnClickListener(this)
         } else { // app重啟畫面 != 首頁
             openActivity(mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
         }
+    }
+
+    protected open fun setViewPadding(v: View, insets: Insets) {
+        v.setPadding(insets.left, insets.top, insets.right, insets.bottom)
     }
 
     protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {

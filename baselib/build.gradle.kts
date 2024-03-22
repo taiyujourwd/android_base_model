@@ -79,7 +79,7 @@ dependencies {
 
     // lottie
     api(libs.lottie)
-    
+
     // autoSize
     api(libs.androidAutoSize)
 }

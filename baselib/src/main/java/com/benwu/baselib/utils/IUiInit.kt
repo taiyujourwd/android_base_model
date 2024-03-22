@@ -8,6 +8,7 @@ import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.R
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.application.BaseApplication
+import com.benwu.baselib.extension.hideKeyboard
 import com.benwu.baselib.extension.snackbar
 
 interface IUiInit<V : ViewBinding> : View.OnClickListener {
@@ -63,5 +64,9 @@ interface IUiInit<V : ViewBinding> : View.OnClickListener {
         val isEnable = false
         if (!isEnable) mActivity.getString(R.string.un_open_fun).snackbar(binding.root).show()
         return isEnable
+    }
+
+    override fun onClick(v: View?) {
+        mActivity.hideKeyboard()
     }
 }

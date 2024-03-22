@@ -2,9 +2,9 @@ package com.benwu.baselib.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import retrofit2.HttpException
 import com.benwu.baselib.extension.isNullOrEmpty
 import com.benwu.baselib.extension.print
+import retrofit2.HttpException
 
 abstract class BasePagingSource<T : Any> : PagingSource<Int, T>() {
 

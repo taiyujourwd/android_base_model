@@ -10,12 +10,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IUiInit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
