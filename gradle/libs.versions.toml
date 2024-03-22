@@ -1,6 +1,6 @@
 [versions]
 #android
-agp = "8.3.0"
+agp = "8.3.1"
 
 appcompat = "1.6.1"
 material = "1.11.0"
@@ -20,7 +20,7 @@ kotlin = "1.9.0"
 kotlinCore = "1.12.0"
 
 #hilt
-hilt = "2.50"
+hilt = "2.51"
 
 #room
 room = "2.6.1"
@@ -35,8 +35,8 @@ datastorePreferences = "1.0.0"
 paging = "3.2.1"
 
 #retrofit
-retrofit = "2.9.0"
-converterGson = "2.9.0"
+retrofit = "2.10.0"
+converterGson = "2.10.0"
 
 #okhttp
 okhttp = "4.12.0"
@@ -48,7 +48,7 @@ gson = "2.10.1"
 glide = "4.16.0"
 
 #lottie
-lottie = "6.3.0"
+lottie = "6.4.0"
 
 #適配
 androidAutoSize = "v1.2.1"
