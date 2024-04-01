@@ -80,6 +80,10 @@ dependencies {
     // lottie
     api(libs.lottie)
 
+    // navigation
+    api(libs.androidx.navigation.fragment.ktx)
+    api(libs.androidx.navigation.ui.ktx)
+
     // autoSize
     api(libs.androidAutoSize)
 }

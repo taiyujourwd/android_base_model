@@ -50,6 +50,9 @@ glide = "4.16.0"
 #lottie
 lottie = "6.4.0"
 
+#navigation
+nav = "2.7.7"
+
 #適配
 androidAutoSize = "v1.2.1"
 
@@ -108,6 +111,10 @@ glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 
 #lottie
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }
+
+#navigation
+androidx-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "nav" }
+androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "nav" }
 
 #適配
 androidAutoSize = { module = "com.github.JessYanCoding:AndroidAutoSize", version.ref = "androidAutoSize" }
