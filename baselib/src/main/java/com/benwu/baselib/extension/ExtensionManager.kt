@@ -983,6 +983,26 @@ fun Context.isGpsOpen(): Boolean {
 
 //region file
 /**
+ * file轉base64
+ * @return base64
+ */
+fun File.toBase64() = try {
+    Base64.encodeToString(readBytes(), Base64.DEFAULT)
+} catch (_: Exception) {
+    null
+}
+
+/**
+ * 創建檔案
+ *
+ * @param fileName 檔案名稱
+ */
+fun File.createFile(fileName: String): File {
+    if (!exists()) mkdir()
+    return File(this, fileName).also { it.createNewFile() }
+}
+
+/**
  * 取得檔案
  *
  * @param fileName 檔案名稱

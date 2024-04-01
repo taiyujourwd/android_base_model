@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -40,12 +41,13 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
     override val binding get() = _binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        setEnableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         // 解決當使用者撤銷權限 app重啟不會回首頁
         if (mApplication.isStartWithHome()) { // app重啟畫面 == 首頁
             _binding = bindViewBinding(layoutInflater).also { setContentView(it.root) }
+            isAppearanceLightStatusBars()
 
             ViewCompat.setOnApplyWindowInsetsListener(_binding.root) { v, insets ->
                 setViewPadding(v, insets.getInsets(WindowInsetsCompat.Type.systemBars()))
@@ -67,6 +69,28 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
         } else { // app重啟畫面 != 首頁
             openActivity(mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
+        }
+    }
+
+    protected open fun setEnableEdgeToEdge() {
+        val statusBarStyle = mApplication.getStatusBarStyle()
+        val navigationBarStyle = mApplication.getNavigationBarStyle()
+
+        if (statusBarStyle != null && navigationBarStyle != null) {
+            enableEdgeToEdge(
+                statusBarStyle = statusBarStyle,
+                navigationBarStyle = navigationBarStyle
+            )
+        } else if (statusBarStyle != null) {
+            enableEdgeToEdge(statusBarStyle = statusBarStyle)
+        } else if (navigationBarStyle != null) {
+            enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
+        }
+    }
+
+    protected open fun isAppearanceLightStatusBars() {
+        mApplication.isAppearanceLightStatusBars()?.also {
+            WindowCompat.getInsetsController(window, _binding.root).isAppearanceLightStatusBars = it
         }
     }
 

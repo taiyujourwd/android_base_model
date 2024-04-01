@@ -15,7 +15,7 @@ import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
 
 abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallback<T>) :
-    ListAdapter<T, ViewHolder<ViewBinding>>(diffCallback), IAdapterInit<T, V> {
+    ListAdapter<T, ViewHolder<V>>(diffCallback), IAdapterInit<T, V> {
 
     private lateinit var _mRecyclerView: RecyclerView
     private lateinit var _mContext: Context
@@ -38,20 +38,20 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
         ViewHolder(bindViewBinding(LayoutInflater.from(mContext), parent, viewType))
 
     override fun onBindViewHolder(
-        holder: ViewHolder<ViewBinding>,
+        holder: ViewHolder<V>,
         position: Int,
         payloads: MutableList<Any>
     ) {
         if (payloads.isEmpty()) {
             super.onBindViewHolder(holder, position, payloads)
         } else {
-            bindView(holder.binding as V, position, getItem(position), payloads)
+            bindView(holder, holder.binding, position, getItem(position), payloads)
             holder.itemView.also { it.tag = position }.setOnClickListener(this)
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder<ViewBinding>, position: Int) {
-        bindView(holder.binding as V, position, getItem(position))
+    override fun onBindViewHolder(holder: ViewHolder<V>, position: Int) {
+        bindView(holder, holder.binding, position, getItem(position))
         holder.itemView.also { it.tag = position }.setOnClickListener(this)
     }
     //endregion

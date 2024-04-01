@@ -16,7 +16,7 @@ import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
 
 abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: DiffUtil.ItemCallback<T>) :
-    PagingDataAdapter<T, ViewHolder<ViewBinding>>(diffCallback),
+    PagingDataAdapter<T, ViewHolder<V>>(diffCallback),
     IAdapterInit<T, V>, View.OnClickListener {
 
     private lateinit var _mRecyclerView: RecyclerView
@@ -49,20 +49,20 @@ abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: Dif
         ViewHolder(bindViewBinding(LayoutInflater.from(mContext), parent, viewType))
 
     override fun onBindViewHolder(
-        holder: ViewHolder<ViewBinding>,
+        holder: ViewHolder<V>,
         position: Int,
         payloads: MutableList<Any>
     ) {
         if (payloads.isEmpty()) {
             super.onBindViewHolder(holder, position, payloads)
         } else {
-            bindView(holder.binding as V, position, getItem(position), payloads)
+            bindView(holder, holder.binding, position, getItem(position), payloads)
             holder.itemView.also { it.tag = position }.setOnClickListener(this)
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder<ViewBinding>, position: Int) {
-        bindView(holder.binding as V, position, getItem(position))
+    override fun onBindViewHolder(holder: ViewHolder<V>, position: Int) {
+        bindView(holder, holder.binding, position, getItem(position))
         holder.itemView.also { it.tag = position }.setOnClickListener(this)
     }
 

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.benwu.baselib.recyclerview.ViewHolder
 
 interface IAdapterInit<T, V : ViewBinding> : View.OnClickListener {
 
@@ -31,6 +32,7 @@ interface IAdapterInit<T, V : ViewBinding> : View.OnClickListener {
      * @param position 資料位置
      */
     fun bindView(
+        holder: ViewHolder<V>,
         binding: V,
         position: Int,
         data: T?,
