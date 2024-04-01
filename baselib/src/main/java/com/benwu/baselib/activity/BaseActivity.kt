@@ -85,6 +85,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
             enableEdgeToEdge(statusBarStyle = statusBarStyle)
         } else if (navigationBarStyle != null) {
             enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
+        } else {
+            enableEdgeToEdge()
         }
     }
 
