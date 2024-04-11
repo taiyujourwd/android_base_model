@@ -12,6 +12,9 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -22,7 +25,6 @@ import android.os.Environment
 import android.provider.Settings
 import android.text.InputFilter
 import android.text.SpannableString
-import android.text.TextUtils
 import android.util.Base64
 import android.util.Log
 import android.util.TypedValue
@@ -33,7 +35,6 @@ import android.webkit.URLUtil
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.annotation.AttrRes
 import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
@@ -45,6 +46,7 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
@@ -74,6 +76,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files
@@ -784,39 +788,6 @@ fun <T> FragmentManager.findFragmentByIdT(id: Int) = findFragmentById(id) as T
 
 //region permission
 /**
- * 檢查權限
- *
- * @param permissionsName 權限名稱
- * @param requestPermissionsLauncher 權限請求
- * @param onGranted 授予權限
- */
-fun AppCompatActivity.checkPermissions(
-    vararg permissions: String,
-    permissionsName: String,
-    requestPermissionsLauncher: ActivityResultLauncher<Array<String>>,
-    onGranted: () -> Unit
-) {
-    when {
-        isPermissionsGranted(*permissions) -> { // 授予權限
-            onGranted()
-        }
-
-        isPermissionRationale(*permissions) -> { // 權限遭拒 向用戶解釋要求此權限原因
-            permissionsName.permissionDeniedMsg(this).message(
-                this, getString(R.string.cancel), positive = getString(R.string.setting)
-            ) {
-                if (it != DialogInterface.BUTTON_POSITIVE) return@message
-                openSetting()
-            }.show()
-        }
-
-        else -> {
-            requestPermissionsLauncher.launch(arrayOf(*permissions))
-        }
-    }
-}
-
-/**
  * 是否授予權限
  *
  * @return 是/否
@@ -839,8 +810,15 @@ fun AppCompatActivity.isPermissionRationale(vararg permissions: String) = permis
  *
  * @return 權限遭拒訊息
  */
-fun String.permissionDeniedMsg(context: Context) =
-    String.format(context.getString(R.string.permission_denied), this)
+fun Context.permissionDeniedMsg(permissionsName: String) =
+    String.format(getString(R.string.permission_denied), permissionsName).message(
+        this,
+        getString(R.string.cancel),
+        positive = getString(R.string.setting)
+    ) {
+        if (it != DialogInterface.BUTTON_POSITIVE) return@message
+        openSetting()
+    }
 //endregion
 
 //region location
@@ -1056,6 +1034,57 @@ fun File.deleteDir() {
 }
 
 /**
+ * 矯正圖片角度
+ */
+fun File.correctImageRotation() = try {
+    var bitmap = BitmapFactory.decodeFile(absolutePath)
+    val exifInterface = ExifInterface(absolutePath)
+
+    val orientation = exifInterface.getAttributeInt(
+        ExifInterface.TAG_ORIENTATION,
+        ExifInterface.ORIENTATION_NORMAL
+    )
+
+    val rotation = when (orientation) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> {
+            90f
+        }
+
+        ExifInterface.ORIENTATION_ROTATE_180 -> {
+            180f
+        }
+
+        ExifInterface.ORIENTATION_ROTATE_270 -> {
+            270f
+        }
+
+        else -> {
+            0f
+        }
+    }
+
+    bitmap = Bitmap.createBitmap(
+        bitmap,
+        0,
+        0,
+        bitmap.getWidth(),
+        bitmap.getHeight(),
+        Matrix().also { it.postRotate(rotation) },
+        true
+    )
+
+    val fos = FileOutputStream(this)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+    fos.flush()
+    fos.close()
+
+    this
+} catch (e: IOException) {
+    e.print()
+    null
+}
+
+/**
  * 檔案下載
  *
  * @param path 路徑
@@ -1268,7 +1297,7 @@ fun isNullOrEmpty(vararg data: Any?): Boolean {
         if (it is Array<*> && it.isEmpty()) return true // array
         if (it is List<*> && it.isEmpty()) return true // list
         if (it is Map<*, *> && it.isEmpty()) return true // map
-        if (it is CharSequence && TextUtils.isEmpty(it)) return true // charSequence
+        if (it is CharSequence && it.isEmpty()) return true // charSequence
     }
 
     return false

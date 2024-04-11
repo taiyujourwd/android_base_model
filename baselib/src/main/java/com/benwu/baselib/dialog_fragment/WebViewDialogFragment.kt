@@ -7,7 +7,6 @@ import android.net.http.SslError
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
@@ -136,10 +135,6 @@ class WebViewDialogFragment : BaseBottomSheetDialogFragment<DialogFragmentWebVie
     }
 
     override fun observer() {
-        //
-    }
-
-    override fun onClick(v: View?) {
         //
     }
 
