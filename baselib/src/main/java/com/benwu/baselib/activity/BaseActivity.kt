@@ -49,7 +49,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
             _binding = bindViewBinding(layoutInflater).also { setContentView(it.root) }
             isAppearanceLightStatusBars()
 
-            ViewCompat.setOnApplyWindowInsetsListener(_binding.root) { v, insets ->
+            ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
                 setViewPadding(v, insets.getInsets(WindowInsetsCompat.Type.systemBars()))
                 insets
             }
@@ -65,7 +65,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
                 }
             })
 
-            _binding.root.setOnClickListener(this)
+            binding.root.setOnClickListener(this)
         } else { // app重啟畫面 != 首頁
             openActivity(mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
@@ -92,7 +92,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
 
     protected open fun isAppearanceLightStatusBars() {
         mApplication.isAppearanceLightStatusBars()?.also {
-            WindowCompat.getInsetsController(window, _binding.root).isAppearanceLightStatusBars = it
+            WindowCompat.getInsetsController(window, binding.root).isAppearanceLightStatusBars = it
         }
     }
 

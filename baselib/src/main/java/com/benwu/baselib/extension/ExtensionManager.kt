@@ -77,7 +77,6 @@ import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files
@@ -245,9 +244,9 @@ fun TextInputEditText.addFilter(newInputFilter: InputFilter) {
 /**
  * 關閉鍵盤
  */
-fun AppCompatActivity.hideKeyboard() {
+fun Context.hideKeyboard(view: View?) {
     val manager = getSystemService(InputMethodManager::class.java)
-    currentFocus?.also { manager.hideSoftInputFromWindow(it.windowToken, 0) }
+    view?.also { manager.hideSoftInputFromWindow(it.windowToken, 0) }
 }
 //endregion
 
@@ -477,7 +476,7 @@ fun String.openUrl(
         WebViewDialogFragment.newInstance(this, toolbarTitle).show(fragmentManager, "webView")
     }
 }
-// endregion
+//endregion
 
 //region imageView
 /**
@@ -662,10 +661,6 @@ fun String.w(tag: String) {
 
 fun String.e(tag: String) {
     if (IS_DEBUG) Log.e(tag, this)
-}
-
-fun Exception.print() {
-    if (IS_DEBUG) printStackTrace()
 }
 
 fun Throwable.print() {
@@ -966,12 +961,13 @@ fun Context.isGpsOpen(): Boolean {
  */
 fun File.toBase64() = try {
     Base64.encodeToString(readBytes(), Base64.DEFAULT)
-} catch (_: Exception) {
+} catch (e: AssertionError) {
+    e.print()
     null
 }
 
 /**
- * 創建檔案
+ * 創建file
  *
  * @param fileName 檔案名稱
  */
@@ -981,16 +977,31 @@ fun File.createFile(fileName: String): File {
 }
 
 /**
- * 取得檔案
+ * 創建file
  *
  * @param fileName 檔案名稱
  */
-fun File.getFile(fileName: String, input: InputStream): File {
+fun File.createFile(fileName: String, input: InputStream): File {
     if (!exists()) mkdir()
     val file = File(this, fileName)
     input.buffered().copyTo(file.outputStream())
     input.close()
 
+    return file
+}
+
+/**
+ * bitmap轉file
+ *
+ * @param fileName 檔案名稱
+ * @return file
+ */
+fun File.fromBitmap(fileName: String, bitmap: Bitmap): File {
+    val file = createFile(fileName)
+    val fos = FileOutputStream(file)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+    fos.flush()
+    fos.close()
     return file
 }
 
@@ -1036,7 +1047,7 @@ fun File.deleteDir() {
 /**
  * 矯正圖片角度
  */
-fun File.correctImageRotation() = try {
+fun File.correctImageRotation() = also {
     var bitmap = BitmapFactory.decodeFile(absolutePath)
     val exifInterface = ExifInterface(absolutePath)
 
@@ -1077,11 +1088,6 @@ fun File.correctImageRotation() = try {
     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
     fos.flush()
     fos.close()
-
-    this
-} catch (e: IOException) {
-    e.print()
-    null
 }
 
 /**
@@ -1093,8 +1099,9 @@ fun File.download(path: String): File {
     val url = URL(path)
     url.openConnection().connect()
 
-    return getFile(
-        URLUtil.guessFileName(path, null, null), BufferedInputStream(url.openStream())
+    return createFile(
+        URLUtil.guessFileName(path, null, null),
+        BufferedInputStream(url.openStream())
     )
 }
 

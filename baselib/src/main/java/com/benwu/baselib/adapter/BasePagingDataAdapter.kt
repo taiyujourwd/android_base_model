@@ -11,22 +11,22 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.benwu.baselib.recyclerview.OnItemClickListener
 import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
 
 abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: DiffUtil.ItemCallback<T>) :
     PagingDataAdapter<T, ViewHolder<V>>(diffCallback),
-    IAdapterInit<T, V>, View.OnClickListener {
+    IAdapterInit<T, V> {
 
     private lateinit var _mRecyclerView: RecyclerView
     private lateinit var _mContext: Context
-
-    protected var onItemClickListener: OnItemClickListener<T>? = null
+    private var _onItemClickListener: ((View?, Int, T?) -> Unit)? = null
 
     override val mRecyclerView get() = _mRecyclerView
 
     override val mContext get() = _mContext
+
+    override val onItemClickListener get() = _onItemClickListener
 
     //region 生命週期
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
@@ -56,33 +56,31 @@ abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: Dif
         if (payloads.isEmpty()) {
             super.onBindViewHolder(holder, position, payloads)
         } else {
-            bindView(holder, holder.binding, position, getItem(position), payloads)
-            holder.itemView.also { it.tag = position }.setOnClickListener(this)
+            bindViewHolder(holder, position, payloads)
         }
     }
 
     override fun onBindViewHolder(holder: ViewHolder<V>, position: Int) {
-        bindView(holder, holder.binding, position, getItem(position))
-        holder.itemView.also { it.tag = position }.setOnClickListener(this)
+        bindViewHolder(holder, position, null)
+    }
+
+    override fun bindViewHolder(holder: ViewHolder<V>, position: Int, payloads: MutableList<Any>?) {
+        bindView(holder.binding, position, getItem(position), payloads)
+        bindOnClickListener(holder)
     }
 
     override fun getItemViewType(position: Int) = if (position == itemCount) VIEW_TYPE_FOOTER else 0
     //endregion
 
-    /**
-     * 設置item點擊監聽
-     */
-    @JvmName("setOnItemClickListener1")
-    fun setOnItemClickListener(listener: OnItemClickListener<T>) {
-        onItemClickListener = listener
+    override fun getDta(holder: ViewHolder<V>): T? = getItem(getPosition(holder))
+
+    override fun setOnItemClickListener(listener: (View?, Int, T?) -> Unit) {
+        _onItemClickListener = listener
     }
 
-    override fun onClick(v: View?) {
-        v?.also {
-            val position = it.tag as Int
-            if (position >= itemCount) return
-            onItemClickListener?.onItemClick(it, position, getItem(position))
-        }
+    override fun onClick(view: View?, position: Int, data: T?) {
+        super.onClick(view, position, data)
+        onItemClickListener?.invoke(view, position, data)
     }
 
     companion object {

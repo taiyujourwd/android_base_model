@@ -18,7 +18,7 @@ import com.benwu.baselib.databinding.DialogFragmentWebViewBinding
 import com.benwu.baselib.extension.init
 import com.benwu.baselib.extension.message
 
-class WebViewDialogFragment : BaseBottomSheetDialogFragment<DialogFragmentWebViewBinding>(),
+class WebViewDialogFragment : BaseBottomSheetDialogFragment<Any, DialogFragmentWebViewBinding>(),
     SwipeRefreshLayout.OnRefreshListener {
 
     private val wvLoad get() = binding.wvLoad

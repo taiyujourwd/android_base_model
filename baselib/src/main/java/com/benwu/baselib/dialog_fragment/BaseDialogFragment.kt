@@ -16,19 +16,23 @@ import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
+import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-abstract class BaseDialogFragment<V : ViewBinding> : AppCompatDialogFragment(), IUiInit<V> {
+abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(), IUiInit<V>,
+    IDialogResult<T> {
 
     protected val loadingDialog by lazy {
-        LoadingDialog(_mActivity)
+        LoadingDialog(mActivity)
     }
 
     private lateinit var _mActivity: BaseActivity<*>
 
     private lateinit var _binding: V
+
+    private var _onDialogResultListener: ((AppCompatDialogFragment, T?) -> Unit)? = null
 
     protected lateinit var mDialog: Dialog
         private set
@@ -41,9 +45,11 @@ abstract class BaseDialogFragment<V : ViewBinding> : AppCompatDialogFragment(), 
 
     override val mActivity get() = _mActivity
 
-    override val mApplication get() = _mActivity.application as BaseApplication
+    override val mApplication get() = mActivity.application as BaseApplication
 
     override val binding get() = _binding
+
+    override val onDialogResultListener get() = _onDialogResultListener
 
     //region 生命週期
     override fun onAttach(context: Context) {
@@ -66,7 +72,7 @@ abstract class BaseDialogFragment<V : ViewBinding> : AppCompatDialogFragment(), 
         savedInstanceState: Bundle?
     ): View? {
         _binding = bindViewBinding(inflater, container)
-        return _binding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -90,6 +96,12 @@ abstract class BaseDialogFragment<V : ViewBinding> : AppCompatDialogFragment(), 
         observer()
     }
     //endregion
+
+    override fun setOnDialogResultListener(
+        listener: ((AppCompatDialogFragment, T?) -> Unit)
+    ) = also {
+        _onDialogResultListener = listener
+    }
 
     protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {
         viewLifecycleOwner.lifecycleScope.launch {

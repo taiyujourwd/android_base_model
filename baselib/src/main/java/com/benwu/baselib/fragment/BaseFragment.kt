@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
     protected val loadingDialog by lazy {
-        LoadingDialog(_mActivity)
+        LoadingDialog(mActivity)
     }
 
     private lateinit var _mActivity: BaseActivity<*>
@@ -29,7 +29,7 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
     override val mActivity get() = _mActivity
 
-    override val mApplication get() = _mActivity.application as BaseApplication
+    override val mApplication get() = mActivity.application as BaseApplication
 
     override val binding get() = _binding
 
@@ -46,7 +46,7 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
         savedInstanceState: Bundle?
     ): View? {
         _binding = bindViewBinding(inflater, container)
-        return _binding.root
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
