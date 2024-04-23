@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import com.benwu.androidbase.data.Repo
 import com.benwu.androidbase.databinding.IncludeItemRepoBinding
 import com.benwu.baselib.adapter.BaseAdapter
-import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.BaseComparator
 
 class RepoRvAdapter : BaseAdapter<Repo.Item, IncludeItemRepoBinding>(BaseComparator()) {
@@ -17,7 +16,6 @@ class RepoRvAdapter : BaseAdapter<Repo.Item, IncludeItemRepoBinding>(BaseCompara
     ) = IncludeItemRepoBinding.inflate(inflater, parent, false)
 
     override fun bindView(
-        holder: ViewHolder<IncludeItemRepoBinding>,
         binding: IncludeItemRepoBinding,
         position: Int,
         data: Repo.Item?,

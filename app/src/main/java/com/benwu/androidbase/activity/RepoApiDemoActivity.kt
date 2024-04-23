@@ -7,22 +7,19 @@ import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.benwu.androidbase.adapter.RepoRvAdapter
-import com.benwu.androidbase.data.Repo
 import com.benwu.androidbase.databinding.IncludeRepoBinding
 import com.benwu.androidbase.dialog_fragment.RepoDetailDialogFragment
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
 import com.benwu.baselib.extension.snackbar
-import com.benwu.baselib.recyclerview.OnItemClickListener
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
-    SwipeRefreshLayout.OnRefreshListener, OnItemClickListener<Repo.Item> {
+    SwipeRefreshLayout.OnRefreshListener {
 
     private val viewModel: RepoViewModel by viewModels()
 
@@ -38,9 +35,7 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
     override fun initView() {
         binding.includeToolbar.toolbar.init(mActivity, "Retrofit")
 
-        adapter = RepoRvAdapter()
-        binding.rv.init(adapter)
-        adapter.setOnItemClickListener(this)
+        initRepoRv()
 
         binding.srl.setOnRefreshListener(this)
     }
@@ -61,15 +56,8 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
                 viewModel.baseUiState.collectLatest {
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = it.isLoading
                     loadingDialog.toggle(!binding.srl.isRefreshing && it.isLoading)
-
-                    if (it.isError) {
-                        getString(com.benwu.baselib.R.string.api_error).snackbar(
-                            binding.root,
-                            Snackbar.LENGTH_INDEFINITE
-                        ).setAction(com.benwu.baselib.R.string.retry) {
-                            getData()
-                        }.show()
-                    }
+                    if (!it.isError) return@collectLatest
+                    getString(com.benwu.baselib.R.string.api_error).snackbar(binding.root).show()
                 }
             }
         }
@@ -83,7 +71,14 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
         getData()
     }
 
-    override fun onItemClick(view: View, position: Int, data: Repo.Item?) {
-        data?.also { RepoDetailDialogFragment.newInstance(it).show(supportFragmentManager, "repo") }
+    private fun initRepoRv() {
+        adapter = RepoRvAdapter()
+        binding.rv.init(adapter)
+
+        adapter.setOnItemClickListener { _, _, item ->
+            item?.also {
+                RepoDetailDialogFragment.newInstance(it).show(supportFragmentManager, "repo")
+            }
+        }
     }
 }

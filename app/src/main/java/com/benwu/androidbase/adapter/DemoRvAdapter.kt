@@ -5,7 +5,6 @@ import android.view.ViewGroup
 import com.benwu.androidbase.data.Demo
 import com.benwu.androidbase.databinding.ListItemDemoBinding
 import com.benwu.baselib.adapter.BaseAdapter
-import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.BaseComparator
 
 class DemoRvAdapter : BaseAdapter<Demo, ListItemDemoBinding>(BaseComparator()) {
@@ -17,7 +16,6 @@ class DemoRvAdapter : BaseAdapter<Demo, ListItemDemoBinding>(BaseComparator()) {
     ) = ListItemDemoBinding.inflate(inflater, parent, false)
 
     override fun bindView(
-        holder: ViewHolder<ListItemDemoBinding>,
         binding: ListItemDemoBinding,
         position: Int,
         data: Demo?,

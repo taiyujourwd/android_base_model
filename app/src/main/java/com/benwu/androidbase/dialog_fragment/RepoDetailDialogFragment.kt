@@ -9,7 +9,8 @@ import com.benwu.androidbase.data.Repo
 import com.benwu.androidbase.databinding.DialogFragmentRepoDetailBinding
 import com.benwu.baselib.dialog_fragment.BaseBottomSheetDialogFragment
 
-class RepoDetailDialogFragment : BaseBottomSheetDialogFragment<DialogFragmentRepoDetailBinding>() {
+class RepoDetailDialogFragment :
+    BaseBottomSheetDialogFragment<Any, DialogFragmentRepoDetailBinding>() {
 
     private var repo: Repo.Item? = null
 

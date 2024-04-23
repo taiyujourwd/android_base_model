@@ -11,12 +11,11 @@ import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
 import com.benwu.baselib.extension.openActivity
 import com.benwu.baselib.extension.openUrl
-import com.benwu.baselib.recyclerview.OnItemClickListener
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : BaseActivity<ActivityMainBinding>(), OnItemClickListener<Demo> {
+class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     @Inject
     lateinit var demoList: List<Demo>
@@ -32,11 +31,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), OnItemClickListener<De
 
     override fun initView() {
         binding.includeToolbar.toolbar.title = "AndroidBase"
-
-        adapter = DemoRvAdapter()
-        binding.rv.init(adapter)
-        adapter.submitList(demoList)
-        adapter.setOnItemClickListener(this)
+        initDemoRv()
     }
 
     override fun getData() {
@@ -51,19 +46,25 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), OnItemClickListener<De
         //
     }
 
-    override fun onItemClick(view: View, position: Int, data: Demo?) {
-        when (data?.title) {
-            "Google" -> "https://www.google.com".openUrl(
-                mActivity,
-                supportFragmentManager,
-                data.title
-            )
+    private fun initDemoRv() {
+        adapter = DemoRvAdapter()
+        binding.rv.init(adapter)
+        adapter.submitList(demoList)
 
-            "Retrofit" -> openActivity(RepoApiDemoActivity::class.java)
+        adapter.setOnItemClickListener { _, _, demo ->
+            when (demo?.title) {
+                "Google" -> "https://www.google.com".openUrl(
+                    mActivity,
+                    supportFragmentManager,
+                    demo.title
+                )
 
-            "Paging 3" -> openActivity(RepoPagingDemoActivity::class.java)
+                "Retrofit" -> openActivity(RepoApiDemoActivity::class.java)
 
-            "DataStore" -> openActivity(RepoDataStoreDemoActivity::class.java)
+                "Paging 3" -> openActivity(RepoPagingDemoActivity::class.java)
+
+                "DataStore" -> openActivity(RepoDataStoreDemoActivity::class.java)
+            }
         }
     }
 }
