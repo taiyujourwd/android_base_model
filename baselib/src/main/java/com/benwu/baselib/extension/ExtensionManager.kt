@@ -71,7 +71,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textview.MaterialTextView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
@@ -112,15 +111,15 @@ fun View.setBackgroundCorner(
     drawable: ((drawable: MaterialShapeDrawable) -> Unit)? = null
 ) {
     val shape = ShapeAppearanceModel().toBuilder()
-        .setTopLeftCorner(cornerFamily, topLeftRadius)
-        .setTopRightCorner(cornerFamily, topRightRadius)
-        .setBottomLeftCorner(cornerFamily, bottomLeftRadius)
-        .setBottomRightCorner(cornerFamily, bottomRightRadius)
+        .setTopLeftCorner(cornerFamily, context.dp(topLeftRadius))
+        .setTopRightCorner(cornerFamily, context.dp(topRightRadius))
+        .setBottomLeftCorner(cornerFamily, context.dp(bottomLeftRadius))
+        .setBottomRightCorner(cornerFamily, context.dp(bottomRightRadius))
         .build()
 
     background = MaterialShapeDrawable(shape).also {
         it.fillColor = ColorStateList.valueOf(fillColor)
-        it.setStroke(strokeWidth, strokeColor)
+        it.setStroke(context.dp(strokeWidth), strokeColor)
         drawable?.invoke(it)
     }
 }
@@ -213,17 +212,6 @@ fun Window.setStatusBarBg(@DrawableRes drawableRes: Int) {
 }
 //endregion
 
-//region textView
-/**
- * 設置字體大小
- *
- * @param size 大小
- */
-fun MaterialTextView.setSize(size: Float) {
-    setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
-}
-//endregion
-
 //region editText
 /**
  * 新增輸入限制
@@ -262,17 +250,16 @@ fun Context.hideKeyboard(view: View?) {
 private fun RecyclerView.init(
     layoutManager: RecyclerView.LayoutManager,
     adapter: RecyclerView.Adapter<*>,
-    spacing: Int,
+    spacing: Float,
     orientation: Int,
     spanCount: Int = 0
 ) = also {
-    it.setHasFixedSize(true)
     it.layoutManager = layoutManager
     it.adapter = adapter
 
     for (i in 0 until it.itemDecorationCount) it.removeItemDecorationAt(i) // 防止有多餘的itemDecoration
-    if (spacing == 0) return@also
-    it.addItemDecoration(SpaceItemDecoration(spacing, orientation, spanCount))
+    if (spacing == 0f) return@also
+    it.addItemDecoration(SpaceItemDecoration(context.dp(spacing).toInt(), orientation, spanCount))
 }
 
 /**
@@ -284,7 +271,7 @@ private fun RecyclerView.init(
  */
 fun RecyclerView.init(
     adapter: RecyclerView.Adapter<*>,
-    spacing: Int = 0,
+    spacing: Float = 0f,
     @RecyclerView.Orientation orientation: Int = RecyclerView.VERTICAL
 ) = init(BaseLinearLayoutManager(context, orientation), adapter, spacing, orientation)
 
@@ -299,7 +286,7 @@ fun RecyclerView.init(
 fun RecyclerView.init(
     @androidx.annotation.IntRange(from = 2) spanCount: Int,
     adapter: RecyclerView.Adapter<*>,
-    spacing: Int = 0,
+    spacing: Float = 0f,
     @RecyclerView.Orientation orientation: Int = RecyclerView.VERTICAL
 ) = init(
     BaseGridLayoutManager(context, spanCount, orientation), adapter, spacing, orientation, spanCount
@@ -463,7 +450,7 @@ fun WebView.loadHtml(baseUrl: String, content: String) {
  */
 fun String.openUrl(
     context: Context,
-    fragmentManager: FragmentManager,
+    fragmentManager: FragmentManager? = null,
     toolbarTitle: String? = null,
     isWebView: Boolean = IS_WEB_VIEW
 ) {
@@ -473,7 +460,9 @@ fun String.openUrl(
             it.data = Uri.parse(this)
         })
     } else { // 內嵌網頁
-        WebViewDialogFragment.newInstance(this, toolbarTitle).show(fragmentManager, "webView")
+        fragmentManager?.also {
+            WebViewDialogFragment.newInstance(this, toolbarTitle).show(it, "webView")
+        }
     }
 }
 //endregion
@@ -1281,6 +1270,18 @@ fun Context.callPhone(tel: String) {
 fun Context.getAttrValue(@AttrRes attrRes: Int) = TypedValue().also {
     theme.resolveAttribute(attrRes, it, true)
 }.data
+
+/**
+ * dp to px
+ */
+fun Context.dp(dp: Float) =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
+
+/**
+ * sp to px
+ */
+fun Context.sp(sp: Float) =
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics)
 
 /**
  * 產生28個字元的密鑰雜湊

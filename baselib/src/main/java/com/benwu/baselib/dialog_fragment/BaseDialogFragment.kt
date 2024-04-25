@@ -92,8 +92,12 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
 
         arguments?.also { getBundle(it) }
         initView()
-        getData()
         observer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getData()
     }
     //endregion
 

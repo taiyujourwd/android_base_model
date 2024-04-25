@@ -54,8 +54,12 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
         arguments?.also { getBundle(it) }
         initView()
-        getData()
         observer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getData()
     }
     //endregion
 

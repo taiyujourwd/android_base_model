@@ -56,7 +56,6 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
 
             intent.extras?.also { getBundle(it) }
             initView()
-            getData()
             observer()
 
             onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -70,6 +69,11 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
             openActivity(mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getData()
     }
 
     protected open fun setEnableEdgeToEdge() {

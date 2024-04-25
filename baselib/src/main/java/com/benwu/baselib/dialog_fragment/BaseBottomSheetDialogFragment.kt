@@ -95,8 +95,12 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
 
         arguments?.also { getBundle(it) }
         initView()
-        getData()
         observer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getData()
     }
     //endregion
 
