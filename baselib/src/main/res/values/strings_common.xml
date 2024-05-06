@@ -23,10 +23,10 @@
     <string name="loading">讀取中．．．</string>
     <string name="downloading">下載中．．．</string>
     <string name="download_msg">是否下載「%s」檔案？</string>
-    <string name="download_notice">檔案下載已經於背景下執行</string>
-    <string name="permission_denied">尚未允許「%s」權限。請至「設定」授予權限，即可使用此功能。</string>
+    <string name="download_notice">檔案下載已經於背景下執行。</string>
+    <string name="permission_denied">尚未允許「%s」權限，請至「設定」授予權限，即可使用此功能。</string>
     <string name="open_web">是否開啟網頁？</string>
-    <string name="open_gps">尚未開啟GPS。請至「設定」授予權限，即可使用此功能。</string>
+    <string name="open_gps">尚未開啟GPS，請至「設定」授予權限，即可使用此功能。</string>
 
     <!-- date time -->
     <string name="year">年</string>

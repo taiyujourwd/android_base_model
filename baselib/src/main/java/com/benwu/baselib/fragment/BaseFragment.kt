@@ -61,6 +61,11 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
         super.onResume()
         getData()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        loadingDialog.toggle(false)
+    }
     //endregion
 
     protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {

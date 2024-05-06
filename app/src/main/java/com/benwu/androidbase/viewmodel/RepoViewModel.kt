@@ -4,16 +4,16 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.ExperimentalPagingApi
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import com.benwu.androidbase.data.Repo
+import com.benwu.androidbase.repository.RepoRepository
+import com.benwu.baselib.api.ApiState
+import com.benwu.baselib.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import com.benwu.androidbase.data.Repo
-import com.benwu.androidbase.repository.RepoRepository
-import com.benwu.baselib.api.ApiState
-import com.benwu.baselib.viewmodel.BaseViewModel
 import javax.inject.Inject
 
 data class RepoUiState(
@@ -28,7 +28,7 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository) 
     val repoUiState = _repoUiState.asStateFlow()
 
     fun getRepoList() = viewModelScope.launch {
-        updateLoading(true)
+        updateLoading(+1)
 
         when (val result = repository.getRepoList()) {
             is ApiState.Success -> {
@@ -36,11 +36,11 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository) 
             }
 
             is ApiState.Failure -> {
-                updateError(true)
+                updateError(-1)
             }
         }
 
-        updateLoading(false)
+        updateLoading(+1)
     }
 
     @ExperimentalPagingApi

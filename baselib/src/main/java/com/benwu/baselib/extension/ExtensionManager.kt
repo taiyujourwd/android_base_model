@@ -49,7 +49,9 @@ import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import androidx.viewbinding.ViewBinding
 import androidx.viewpager2.widget.ViewPager2
 import com.benwu.baselib.BuildConfig
 import com.benwu.baselib.R
@@ -58,6 +60,7 @@ import com.benwu.baselib.adapter.FragmentVpAdapter
 import com.benwu.baselib.api.ApiState
 import com.benwu.baselib.dialog_fragment.WebViewDialogFragment
 import com.benwu.baselib.recyclerview.SpaceItemDecoration
+import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.view.BaseGridLayoutManager
 import com.benwu.baselib.view.BaseLinearLayoutManager
 import com.bumptech.glide.Glide
@@ -235,6 +238,15 @@ fun TextInputEditText.addFilter(newInputFilter: InputFilter) {
 fun Context.hideKeyboard(view: View?) {
     val manager = getSystemService(InputMethodManager::class.java)
     view?.also { manager.hideSoftInputFromWindow(it.windowToken, 0) }
+}
+//endregion
+
+//region adapter
+/**
+ * 更新項目
+ */
+fun <T, V : ViewBinding> ListAdapter<T, ViewHolder<V>>.updateList(update: (ArrayList<T>) -> Unit) {
+    submitList(ArrayList(currentList).also { update(it) })
 }
 //endregion
 
@@ -1036,47 +1048,49 @@ fun File.deleteDir() {
 /**
  * 矯正圖片角度
  */
-fun File.correctImageRotation() = also {
-    var bitmap = BitmapFactory.decodeFile(absolutePath)
-    val exifInterface = ExifInterface(absolutePath)
+suspend fun File.correctImageRotation() = withContext(Dispatchers.IO) {
+    return@withContext this@correctImageRotation.also { file ->
+        var bitmap = BitmapFactory.decodeFile(absolutePath)
+        val exifInterface = ExifInterface(absolutePath)
 
-    val orientation = exifInterface.getAttributeInt(
-        ExifInterface.TAG_ORIENTATION,
-        ExifInterface.ORIENTATION_NORMAL
-    )
+        val orientation = exifInterface.getAttributeInt(
+            ExifInterface.TAG_ORIENTATION,
+            ExifInterface.ORIENTATION_NORMAL
+        )
 
-    val rotation = when (orientation) {
-        ExifInterface.ORIENTATION_ROTATE_90 -> {
-            90f
+        val rotation = when (orientation) {
+            ExifInterface.ORIENTATION_ROTATE_90 -> {
+                90f
+            }
+
+            ExifInterface.ORIENTATION_ROTATE_180 -> {
+                180f
+            }
+
+            ExifInterface.ORIENTATION_ROTATE_270 -> {
+                270f
+            }
+
+            else -> {
+                0f
+            }
         }
 
-        ExifInterface.ORIENTATION_ROTATE_180 -> {
-            180f
-        }
+        bitmap = Bitmap.createBitmap(
+            bitmap,
+            0,
+            0,
+            bitmap.getWidth(),
+            bitmap.getHeight(),
+            Matrix().also { it.postRotate(rotation) },
+            true
+        )
 
-        ExifInterface.ORIENTATION_ROTATE_270 -> {
-            270f
-        }
-
-        else -> {
-            0f
-        }
+        val fos = FileOutputStream(file)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+        fos.flush()
+        fos.close()
     }
-
-    bitmap = Bitmap.createBitmap(
-        bitmap,
-        0,
-        0,
-        bitmap.getWidth(),
-        bitmap.getHeight(),
-        Matrix().also { it.postRotate(rotation) },
-        true
-    )
-
-    val fos = FileOutputStream(this)
-    bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-    fos.flush()
-    fos.close()
 }
 
 /**

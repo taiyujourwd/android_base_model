@@ -99,6 +99,11 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
         super.onResume()
         getData()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        loadingDialog.toggle(false)
+    }
     //endregion
 
     override fun setOnDialogResultListener(

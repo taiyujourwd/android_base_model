@@ -23,7 +23,7 @@ abstract class BaseRemoteMediator<T : Any>(private val loadSize: Int) : RemoteMe
                 }
 
                 LoadType.APPEND -> {
-                    if (state.lastItemOrNull() == null) return MediatorResult.Success(true)
+                    if (isNullOrEmpty(state.lastItemOrNull())) return MediatorResult.Success(true)
                     getNextKey(loadType, state)
                 }
             }

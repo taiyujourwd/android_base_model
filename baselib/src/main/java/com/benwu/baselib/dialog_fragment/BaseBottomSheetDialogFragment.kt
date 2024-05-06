@@ -102,6 +102,11 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
         super.onResume()
         getData()
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        loadingDialog.toggle(false)
+    }
     //endregion
 
     override fun setOnDialogResultListener(

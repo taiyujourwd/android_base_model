@@ -76,6 +76,11 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
         getData()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        loadingDialog.toggle(false)
+    }
+
     protected open fun setEnableEdgeToEdge() {
         val statusBarStyle = mApplication.getStatusBarStyle()
         val navigationBarStyle = mApplication.getNavigationBarStyle()
