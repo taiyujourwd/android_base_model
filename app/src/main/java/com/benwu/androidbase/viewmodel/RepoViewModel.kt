@@ -36,11 +36,11 @@ class RepoViewModel @Inject constructor(private val repository: RepoRepository) 
             }
 
             is ApiState.Failure -> {
-                updateError(-1)
+                updateError(+1)
             }
         }
 
-        updateLoading(+1)
+        updateLoading(-1)
     }
 
     @ExperimentalPagingApi
