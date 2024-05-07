@@ -125,6 +125,8 @@ fun View.setBackgroundCorner(
         it.setStroke(context.dp(strokeWidth), strokeColor)
         drawable?.invoke(it)
     }
+
+    clipToOutline = true
 }
 
 /**
