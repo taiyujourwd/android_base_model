@@ -18,6 +18,7 @@ import com.benwu.baselib.R
 import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.extension.getIntentWithSingleTop
+import com.benwu.baselib.extension.isNullOrEmpty
 import com.benwu.baselib.extension.openActivity
 import com.benwu.baselib.extension.toast
 import com.benwu.baselib.utils.IUiInit
@@ -85,15 +86,15 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
         val statusBarStyle = mApplication.getStatusBarStyle()
         val navigationBarStyle = mApplication.getNavigationBarStyle()
 
-        if (statusBarStyle != null && navigationBarStyle != null) {
+        if (!isNullOrEmpty(statusBarStyle, navigationBarStyle)) {
             enableEdgeToEdge(
-                statusBarStyle = statusBarStyle,
-                navigationBarStyle = navigationBarStyle
+                statusBarStyle = statusBarStyle!!,
+                navigationBarStyle = navigationBarStyle!!
             )
-        } else if (statusBarStyle != null) {
-            enableEdgeToEdge(statusBarStyle = statusBarStyle)
-        } else if (navigationBarStyle != null) {
-            enableEdgeToEdge(navigationBarStyle = navigationBarStyle)
+        } else if (!isNullOrEmpty(statusBarStyle)) {
+            enableEdgeToEdge(statusBarStyle = statusBarStyle!!)
+        } else if (!isNullOrEmpty(navigationBarStyle)) {
+            enableEdgeToEdge(navigationBarStyle = navigationBarStyle!!)
         } else {
             enableEdgeToEdge()
         }

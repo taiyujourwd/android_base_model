@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.benwu.baselib.extension.isNullOrEmpty
 import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
 
@@ -53,7 +54,7 @@ abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: Dif
         position: Int,
         payloads: MutableList<Any>
     ) {
-        if (payloads.isEmpty()) {
+        if (isNullOrEmpty(payloads)) {
             super.onBindViewHolder(holder, position, payloads)
         } else {
             bindViewHolder(holder, position, payloads)

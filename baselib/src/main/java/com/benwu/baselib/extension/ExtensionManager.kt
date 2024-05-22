@@ -227,7 +227,7 @@ fun TextInputEditText.addFilter(newInputFilter: InputFilter) {
     val mFilters = arrayOfNulls<InputFilter>(filters.size + 1)
 
     filters.forEachIndexed<InputFilter?> { i: Int, inputFilter: InputFilter? ->
-        if (inputFilter != null) mFilters[i] = inputFilter
+        if (!isNullOrEmpty(inputFilter)) mFilters[i] = inputFilter
     }
 
     mFilters[filters.size] = newInputFilter
@@ -1017,22 +1017,21 @@ fun File.unzip(input: InputStream) {
     ZipInputStream(input).also {
         var entry = it.nextEntry
 
-        while (entry != null) {
-            if (entry.name?.isEmpty() == false) {
-                val file = File(this, entry.name!!)
+        while (!isNullOrEmpty(entry)) {
+            val file = File(this, entry.name)
+            if (!file.canonicalPath.startsWith(canonicalPath)) return@also
 
-                if (entry.isDirectory) {
-                    file.mkdirs()
-                } else {
-                    file.parentFile?.mkdirs()
-                    it.buffered().copyTo(file.outputStream())
-                }
+            if (entry.isDirectory) {
+                file.mkdirs()
+            } else {
+                file.parentFile?.mkdirs()
+                it.buffered().copyTo(file.outputStream())
             }
 
+            it.closeEntry()
             entry = it.nextEntry
         }
 
-        it.closeEntry()
         it.close()
     }
 }
@@ -1321,7 +1320,7 @@ fun isNullOrEmpty(vararg data: Any?): Boolean {
         if (it is Array<*> && it.isEmpty()) return true // array
         if (it is List<*> && it.isEmpty()) return true // list
         if (it is Map<*, *> && it.isEmpty()) return true // map
-        if (it is CharSequence && it.isEmpty()) return true // charSequence
+        if (it is CharSequence && it.isBlank()) return true // charSequence
     }
 
     return false

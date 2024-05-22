@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.benwu.baselib.extension.isNullOrEmpty
 import com.benwu.baselib.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
 
@@ -42,7 +43,7 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
         position: Int,
         payloads: MutableList<Any>
     ) {
-        if (payloads.isEmpty()) {
+        if (isNullOrEmpty(payloads)) {
             super.onBindViewHolder(holder, position, payloads)
         } else {
             bindViewHolder(holder, position, payloads)
