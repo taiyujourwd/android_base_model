@@ -50,7 +50,7 @@ class PermissionsResultLauncher(caller: ActivityResultCaller) {
                         callback.onActivityResult(EXPLAINED)
                     }
 
-                    else -> {
+                    else -> { // 權限遭拒
                         callback.onActivityResult(DENIED)
                     }
                 }

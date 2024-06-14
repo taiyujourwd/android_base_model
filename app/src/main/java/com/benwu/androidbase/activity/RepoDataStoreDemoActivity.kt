@@ -39,7 +39,7 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
     }
 
     override fun initView() {
-        binding.includeToolbar.toolbar.init(mActivity, "DataStore")
+        binding.toolbar.init(mActivity, "DataStore")
 
         initRepoRv()
 

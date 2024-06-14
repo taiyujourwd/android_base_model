@@ -33,7 +33,7 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
     }
 
     override fun initView() {
-        binding.includeToolbar.toolbar.init(mActivity, "Retrofit")
+        binding.toolbar.init(mActivity, "Retrofit")
 
         initRepoRv()
 

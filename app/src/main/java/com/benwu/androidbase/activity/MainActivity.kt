@@ -30,7 +30,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
     }
 
     override fun initView() {
-        binding.includeToolbar.toolbar.title = "AndroidBase"
+        binding.toolbar.title = "AndroidBase"
         initDemoRv()
     }
 
@@ -53,11 +53,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         adapter.setOnItemClickListener { _, _, demo ->
             when (demo?.title) {
-                "Google" -> "https://www.google.com".openUrl(
-                    mActivity,
-                    supportFragmentManager,
-                    demo.title
-                )
+                "Google" -> openUrl(demo.title, "https://www.google.com")
 
                 "Retrofit" -> openActivity(RepoApiDemoActivity::class.java)
 

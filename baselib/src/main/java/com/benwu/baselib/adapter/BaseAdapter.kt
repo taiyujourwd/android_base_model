@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.benwu.baselib.adapter
 
 import android.content.Context
@@ -60,7 +58,7 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
     }
     //endregion
 
-    override fun getDta(holder: ViewHolder<V>): T? = getItem(getPosition(holder))
+    override fun getData(holder: ViewHolder<V>): T? = getItem(getPosition(holder))
 
     override fun setOnItemClickListener(listener: (View?, Int, T?) -> Unit) {
         _onItemClickListener = listener

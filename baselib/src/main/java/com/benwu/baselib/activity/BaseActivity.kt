@@ -6,9 +6,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -31,27 +29,28 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
         LoadingDialog(mActivity)
     }
 
+    private lateinit var mApplication: BaseApplication
+
     private lateinit var _binding: V
 
     private var backPressedTime = 0L // 按返回時間
 
     override val mActivity get() = this
 
-    override val mApplication get() = application as BaseApplication
-
     override val binding get() = _binding
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setEnableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        mApplication = application as BaseApplication
+        setEnableEdgeToEdge()
 
         // 解決當使用者撤銷權限 app重啟不會回首頁
         if (mApplication.isStartWithHome()) { // app重啟畫面 == 首頁
             _binding = bindViewBinding(layoutInflater).also { setContentView(it.root) }
-            isAppearanceLightStatusBars()
 
             ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-                setViewPadding(v, insets.getInsets(WindowInsetsCompat.Type.systemBars()))
+                setViewPadding(v, insets)
                 insets
             }
 
@@ -65,7 +64,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
                 }
             })
 
-            binding.root.setOnClickListener(this)
+            setOnClickListeners(binding.root)
         } else { // app重啟畫面 != 首頁
             openActivity(mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
@@ -100,13 +99,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
         }
     }
 
-    protected open fun isAppearanceLightStatusBars() {
-        mApplication.isAppearanceLightStatusBars()?.also {
-            WindowCompat.getInsetsController(window, binding.root).isAppearanceLightStatusBars = it
-        }
-    }
-
-    protected open fun setViewPadding(v: View, insets: Insets) {
+    protected open fun setViewPadding(v: View, windowInsets: WindowInsetsCompat) {
+        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
         v.setPadding(insets.left, insets.top, insets.right, insets.bottom)
     }
 

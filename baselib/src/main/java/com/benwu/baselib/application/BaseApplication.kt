@@ -35,21 +35,17 @@ abstract class BaseApplication : Application() {
     //region 額外方法
     /**
      * 取得狀態欄樣式
+     *
      * @return 狀態欄樣式
      */
     open fun getStatusBarStyle(): SystemBarStyle? = null
 
     /**
      * 取得導覽列樣式
+     *
      * @return 導覽列樣式
      */
     open fun getNavigationBarStyle(): SystemBarStyle? = null
-
-    /**
-     * 是否顯示明亮的狀態欄
-     * @return 是否顯示明亮的狀態欄
-     */
-    open fun isAppearanceLightStatusBars(): Boolean? = null
 
     /**
      * 解決當使用者撤銷權限 app重啟不會回首頁

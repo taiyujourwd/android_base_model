@@ -15,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
-import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
@@ -43,11 +42,10 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
     protected var mWindow: Window? = null
         private set
 
-    protected var isExpanded = false // 是否展開
+    open val isExpanded = false // 是否展開
+    open val height = ViewGroup.LayoutParams.WRAP_CONTENT
 
     override val mActivity get() = _mActivity
-
-    override val mApplication get() = mActivity.application as BaseApplication
 
     override val binding get() = _binding
 
@@ -56,7 +54,6 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
     //region 生命週期
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
         _mActivity = context as BaseActivity<*>
     }
 
@@ -82,20 +79,23 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
 
         mWindow?.setBackgroundDrawable(null)
 
-        val bottomSheet =
-            mDialog.findViewById<FrameLayout>(com.google.android.material.R.id.design_bottom_sheet)
-        bottomSheet.layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT
+        mDialog.findViewById<FrameLayout>(
+            com.google.android.material.R.id.design_bottom_sheet
+        ).also {
+            it.layoutParams.height = height
 
-        // 是否展開
-        if (isExpanded) {
-            val behavior = BottomSheetBehavior.from(bottomSheet)
-            behavior.state = BottomSheetBehavior.STATE_EXPANDED
-            behavior.skipCollapsed = true
+            if (isExpanded) { // 展開
+                val behavior = BottomSheetBehavior.from(it)
+                behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                behavior.skipCollapsed = true
+            }
         }
 
         arguments?.also { getBundle(it) }
         initView()
         observer()
+
+        setOnClickListeners(binding.root)
     }
 
     override fun onResume() {

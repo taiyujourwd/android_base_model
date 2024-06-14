@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Style.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleCentered">true</item>
+        <item name="navigationIcon">@drawable/ic_back</item>
+        <item name="navigationIconTint">?colorOnSurface</item>
+    </style>
+
+</resources>

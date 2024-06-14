@@ -11,7 +11,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
-import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IUiInit
 import kotlinx.coroutines.CoroutineScope
@@ -29,14 +28,11 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
     override val mActivity get() = _mActivity
 
-    override val mApplication get() = mActivity.application as BaseApplication
-
     override val binding get() = _binding
 
     //region 生命週期
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
         _mActivity = context as BaseActivity<*>
     }
 
@@ -55,6 +51,8 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
         arguments?.also { getBundle(it) }
         initView()
         observer()
+
+        setOnClickListeners(binding.root)
     }
 
     override fun onResume() {

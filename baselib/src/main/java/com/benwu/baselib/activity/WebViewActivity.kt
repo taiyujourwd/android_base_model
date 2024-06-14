@@ -1,32 +1,31 @@
-package com.benwu.baselib.dialog_fragment
+package com.benwu.baselib.activity
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
 import android.graphics.Bitmap
 import android.net.http.SslError
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import androidx.core.view.WindowInsetsCompat
 import com.benwu.baselib.R
-import com.benwu.baselib.databinding.DialogFragmentWebViewBinding
+import com.benwu.baselib.databinding.ActivityWebViewBinding
 import com.benwu.baselib.extension.init
 import com.benwu.baselib.extension.message
 
-class WebViewDialogFragment : BaseBottomSheetDialogFragment<Any, DialogFragmentWebViewBinding>(),
-    SwipeRefreshLayout.OnRefreshListener {
+class WebViewActivity : BaseActivity<ActivityWebViewBinding>() {
 
     private val wvLoad get() = binding.wvLoad
-    private val srl get() = binding.srl
+
     private val wv get() = binding.wv
 
-    private var url = "" // 網址
     private var toolbarTitle = "" // toolbar標題
+    private var url = "" // 網址
 
     //region 生命週期
     override fun onResume() {
@@ -43,11 +42,11 @@ class WebViewDialogFragment : BaseBottomSheetDialogFragment<Any, DialogFragmentW
         wv.pauseTimers()
     }
 
-    override fun onDestroyView() {
+    override fun onDestroy() {
         binding.root.removeView(wv)
         wv.destroy()
 
-        super.onDestroyView()
+        super.onDestroy()
     }
     //endregion
 
@@ -55,44 +54,26 @@ class WebViewDialogFragment : BaseBottomSheetDialogFragment<Any, DialogFragmentW
     override fun bindViewBinding(
         inflater: LayoutInflater,
         container: ViewGroup?
-    ) = DialogFragmentWebViewBinding.inflate(inflater, container, false).also {
-        isExpanded = true
-    }
+    ) = ActivityWebViewBinding.inflate(inflater)
 
     override fun getBundle(bundle: Bundle) {
-        url = bundle.getString("data", "")
         toolbarTitle = bundle.getString("title", "")
+        url = bundle.getString("data", "")
     }
 
     override fun initView() {
-        mDialog.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
-                if (wv.canGoBack()) wv.goBack() else dismiss()
-                return@setOnKeyListener true
-            }
-
-            false
-        }
-
-        binding.includeToolbar.toolbar.init(toolbarTitle, navigationRes = R.drawable.ic_close) {
-            dismiss()
-        }.background = null
+        binding.toolbar.init(mActivity, toolbarTitle)
 
         wv.init().loadUrl(url)
 
         wv.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) { // 加載開始
                 super.onPageStarted(view, url, favicon)
-
-                srl.isEnabled = srl.isRefreshing
                 wvLoad.show()
             }
 
             override fun onPageFinished(view: WebView?, url: String?) { // 加載完成
                 super.onPageFinished(view, url)
-
-                srl.isRefreshing = false
-                srl.isEnabled = true
                 wvLoad.hide()
             }
 
@@ -126,8 +107,6 @@ class WebViewDialogFragment : BaseBottomSheetDialogFragment<Any, DialogFragmentW
                 wvLoad.progress = newProgress
             }
         }
-
-        binding.srl.setOnRefreshListener(this)
     }
 
     override fun getData() {
@@ -137,19 +116,14 @@ class WebViewDialogFragment : BaseBottomSheetDialogFragment<Any, DialogFragmentW
     override fun observer() {
         //
     }
-
-    override fun onRefresh() {
-        wv.reload()
-    }
     //endregion
 
-    companion object {
-        fun newInstance(url: String, toolbarTitle: String? = null) =
-            WebViewDialogFragment().also { fragment ->
-                fragment.arguments = Bundle().also {
-                    it.putString("data", url)
-                    it.putString("title", toolbarTitle)
-                }
-            }
+    override fun setViewPadding(v: View, windowInsets: WindowInsetsCompat) {
+        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+        v.setPadding(insets.left, insets.top, insets.right, 0)
+    }
+
+    override fun onBack() {
+        if (wv.canGoBack()) wv.goBack() else super.onBack()
     }
 }

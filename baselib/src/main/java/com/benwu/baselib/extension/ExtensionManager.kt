@@ -12,9 +12,11 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -29,7 +31,6 @@ import android.util.Base64
 import android.util.Log
 import android.util.TypedValue
 import android.view.View
-import android.view.Window
 import android.view.inputmethod.InputMethodManager
 import android.webkit.URLUtil
 import android.webkit.WebSettings
@@ -46,6 +47,7 @@ import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -56,13 +58,13 @@ import androidx.viewpager2.widget.ViewPager2
 import com.benwu.baselib.BuildConfig
 import com.benwu.baselib.R
 import com.benwu.baselib.activity.BaseActivity
+import com.benwu.baselib.activity.WebViewActivity
 import com.benwu.baselib.adapter.FragmentVpAdapter
 import com.benwu.baselib.api.ApiState
-import com.benwu.baselib.dialog_fragment.WebViewDialogFragment
+import com.benwu.baselib.extension.view.BaseGridLayoutManager
+import com.benwu.baselib.extension.view.BaseLinearLayoutManager
 import com.benwu.baselib.recyclerview.SpaceItemDecoration
 import com.benwu.baselib.recyclerview.ViewHolder
-import com.benwu.baselib.view.BaseGridLayoutManager
-import com.benwu.baselib.view.BaseLinearLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.MaterialToolbar
@@ -83,13 +85,12 @@ import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.Stack
 import java.util.zip.ZipInputStream
 
-//region view
+//region background
 /**
  * 設置角邊背景
  *
@@ -102,7 +103,7 @@ import java.util.zip.ZipInputStream
  * @param strokeColor 框顏色
  * @param cornerFamily 角邊樣式
  */
-fun View.setBackgroundCorner(
+fun createBackgroundCorner(
     topLeftRadius: Float = 0f,
     topRightRadius: Float = 0f,
     bottomLeftRadius: Float = 0f,
@@ -110,23 +111,19 @@ fun View.setBackgroundCorner(
     @ColorInt fillColor: Int = 0,
     strokeWidth: Float = 0f,
     @ColorInt strokeColor: Int = 0,
-    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED,
-    drawable: ((drawable: MaterialShapeDrawable) -> Unit)? = null
-) {
+    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED
+): MaterialShapeDrawable {
     val shape = ShapeAppearanceModel().toBuilder()
-        .setTopLeftCorner(cornerFamily, context.dp(topLeftRadius))
-        .setTopRightCorner(cornerFamily, context.dp(topRightRadius))
-        .setBottomLeftCorner(cornerFamily, context.dp(bottomLeftRadius))
-        .setBottomRightCorner(cornerFamily, context.dp(bottomRightRadius))
+        .setTopLeftCorner(cornerFamily, topLeftRadius.dp)
+        .setTopRightCorner(cornerFamily, topRightRadius.dp)
+        .setBottomLeftCorner(cornerFamily, bottomLeftRadius.dp)
+        .setBottomRightCorner(cornerFamily, bottomRightRadius.dp)
         .build()
 
-    background = MaterialShapeDrawable(shape).also {
+    return MaterialShapeDrawable(shape).also {
         it.fillColor = ColorStateList.valueOf(fillColor)
-        it.setStroke(context.dp(strokeWidth), strokeColor)
-        drawable?.invoke(it)
+        it.setStroke(strokeWidth.dp, strokeColor)
     }
-
-    clipToOutline = true
 }
 
 /**
@@ -138,25 +135,31 @@ fun View.setBackgroundCorner(
  * @param strokeColor 框顏色
  * @param cornerFamily 角邊樣式
  */
-fun View.setBackgroundCorner(
+fun createBackgroundCorner(
     radius: Float,
     @ColorInt fillColor: Int = 0,
     strokeWidth: Float = 0f,
     @ColorInt strokeColor: Int = 0,
-    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED,
-    drawable: ((drawable: MaterialShapeDrawable) -> Unit)? = null
-) {
-    setBackgroundCorner(
-        radius,
-        radius,
-        radius,
-        radius,
-        fillColor,
-        strokeWidth,
-        strokeColor,
-        cornerFamily,
-        drawable
-    )
+    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED
+) = createBackgroundCorner(
+    radius,
+    radius,
+    radius,
+    radius,
+    fillColor,
+    strokeWidth,
+    strokeColor,
+    cornerFamily
+)
+
+/**
+ * 設置裁切背景
+ *
+ * @param drawable 背景
+ */
+fun View.setClipBackground(drawable: Drawable) {
+    background = drawable
+    clipToOutline = true
 }
 //endregion
 
@@ -170,16 +173,12 @@ fun View.setBackgroundCorner(
 fun MaterialToolbar.init(
     title: String? = null,
     @MenuRes menuRes: Int = 0,
-    @DrawableRes navigationRes: Int = R.drawable.ic_back,
     onNavigationClick: (() -> Unit)? = null
 ) = also { toolbar ->
     toolbar.title = title
     toolbar.initMenu(menuRes)
-
-    onNavigationClick?.also {
-        toolbar.setNavigationIcon(navigationRes)
-        toolbar.setNavigationOnClickListener { it() }
-    }
+    if (isNullOrEmpty(onNavigationClick)) return@also
+    toolbar.setNavigationOnClickListener { onNavigationClick?.invoke() }
 }
 
 /**
@@ -191,9 +190,8 @@ fun MaterialToolbar.init(
 fun MaterialToolbar.init(
     activity: BaseActivity<*>,
     title: String? = null,
-    @MenuRes menuRes: Int = 0,
-    @DrawableRes navigationRes: Int = R.drawable.ic_back
-) = init(title, menuRes, navigationRes) {
+    @MenuRes menuRes: Int = 0
+) = init(title, menuRes) {
     activity.onBack()
 }
 
@@ -205,15 +203,6 @@ fun MaterialToolbar.init(
 fun MaterialToolbar.initMenu(@MenuRes menuRes: Int) = also {
     it.menu.clear()
     if (menuRes != 0) it.inflateMenu(menuRes)
-}
-
-/**
- * 設置statusBar背景
- */
-fun Window.setStatusBarBg(@DrawableRes drawableRes: Int) {
-    if (drawableRes == 0) return
-    statusBarColor = ContextCompat.getColor(context, R.color.transparent)
-    setBackgroundDrawableResource(drawableRes)
 }
 //endregion
 
@@ -273,7 +262,7 @@ private fun RecyclerView.init(
 
     for (i in 0 until it.itemDecorationCount) it.removeItemDecorationAt(i) // 防止有多餘的itemDecoration
     if (spacing == 0f) return@also
-    it.addItemDecoration(SpaceItemDecoration(context.dp(spacing).toInt(), orientation, spanCount))
+    it.addItemDecoration(SpaceItemDecoration(spacing.dp.toInt(), orientation, spanCount))
 }
 
 /**
@@ -309,7 +298,7 @@ fun RecyclerView.init(
 
 //region viewPager
 /**
- * 初始化viewPager(item)
+ * 初始化viewPager
  *
  * @param pageTransformer 滑動效果
  * @param orientation 縱/橫向
@@ -329,7 +318,7 @@ fun ViewPager2.init(
 }
 
 /**
- * 初始化viewPager(itemFragment)
+ * 初始化viewPager + fragment
  *
  * @param orientation 縱/橫向
  * @param direction 滑動方向
@@ -348,7 +337,7 @@ private fun ViewPager2.init(
 }
 
 /**
- * 初始化viewPager(itemFragment_activity)
+ * 初始化viewPager + fragment(activity)
  *
  * @param orientation 縱/橫向
  * @param direction 滑動方向
@@ -362,7 +351,7 @@ fun ViewPager2.init(
 ) = init(FragmentVpAdapter(activity, fragmentList), fragmentList.size, orientation, direction)
 
 /**
- * 初始化viewpager(itemFragment_fragment)
+ * 初始化viewPager + fragment(fragment)
  *
  * @param orientation 縱/橫向
  * @param direction 滑動方向
@@ -432,8 +421,8 @@ fun WebView.init(setting: ((settings: WebSettings) -> Unit)? = null) = also {
     it.settings.loadWithOverviewMode = true
 
     // 缩放
-    it.settings.setSupportZoom(true)
-    it.settings.builtInZoomControls = true
+    it.settings.setSupportZoom(false)
+    it.settings.builtInZoomControls = false
     it.settings.displayZoomControls = false
 
     setting?.invoke(settings)
@@ -455,29 +444,6 @@ fun WebView.loadHtml(baseUrl: String, content: String) {
         .append(String.format("<body>%s</body></html>", content))
 
     loadDataWithBaseURL(baseUrl, data.toString(), "text/html", "utf-8", null)
-}
-
-/**
- * 導去該網址
- *
- * @param toolbarTitle toolbar標題
- */
-fun String.openUrl(
-    context: Context,
-    fragmentManager: FragmentManager? = null,
-    toolbarTitle: String? = null,
-    isWebView: Boolean = IS_WEB_VIEW
-) {
-    if (!isWebView) { // chrome
-        context.openActivity(context.getIntentWithSingleTop().also {
-            it.action = Intent.ACTION_VIEW
-            it.data = Uri.parse(this)
-        })
-    } else { // 內嵌網頁
-        fragmentManager?.also {
-            WebViewDialogFragment.newInstance(this, toolbarTitle).show(it, "webView")
-        }
-    }
 }
 //endregion
 
@@ -552,7 +518,9 @@ fun <T> MutableList<T>.refresh(dataList: List<T>) {
  * @return 關鍵字查詢(dataList)
  */
 fun <T> Iterable<T>.search(
-    keyword: String?, ignoreCase: Boolean = true, fields: (T) -> Iterable<String?>
+    keyword: String?,
+    ignoreCase: Boolean = true,
+    fields: (T) -> Iterable<String?>
 ) = filter { data ->
     fields(data).any { it?.contains(keyword ?: "", ignoreCase) ?: false }
 }
@@ -569,19 +537,6 @@ fun <T, D> Iterable<T>.listBy(data: (T) -> D) = ArrayList<D>().also { dataList -
 
 //region string
 /**
- * string分割
- *
- * @param splits 分割文字
- * @param ignoreCase 是否忽略大小寫
- * @return stringArray
- */
-fun CharSequence.split(
-    vararg splits: String,
-    ignoreCase: Boolean = true,
-    condition: (splitList: List<String>) -> Boolean,
-) = split(*splits, ignoreCase = ignoreCase).let { if (condition(it)) it else null }
-
-/**
  * string樣式
  *
  * @param spans 樣式
@@ -594,53 +549,32 @@ fun CharSequence.setSpan(vararg spans: Any) = SpannableString(this).also { strin
 
 //region dateTime
 /**
- * dateTime分割
+ * string轉date
  *
- * @param splits 分割文字
- * @return calendar
+ * @param pattern 格式
+ * @return date
  */
-fun CharSequence.splitDateTime(
-    vararg splits: String,
-    condition: (splitList: List<String>) -> Boolean
-) = split(*splits, condition = condition)?.let { list ->
-    Calendar.getInstance().also {
-        it.set(
-            list[0].toInt(),
-            list[1].toInt() - 1,
-            list[2].toInt(),
-            if (list.size > 3) list[3].toInt() else 0,
-            if (list.size > 4) list[4].toInt() else 0,
-            if (list.size > 5) list[5].toInt() else 0
-        )
-
-        it.set(Calendar.MILLISECOND, 0)
-    }
-}
+fun String.parseDate(pattern: String) = runCatching {
+    SimpleDateFormat(pattern, Locale.getDefault()).parse(this)
+}.getOrNull()
 
 /**
  * date轉string
  *
  * @param pattern 格式
- * @return 日期
+ * @return string
  */
-fun Date.formatString(pattern: String): String =
+fun Date.formatString(pattern: String) = runCatching {
     SimpleDateFormat(pattern, Locale.getDefault()).format(this)
+}.getOrNull()
 
 /**
  * long轉string
  *
  * @param pattern 格式
- * @return 日期
+ * @return string
  */
 fun Long.formatString(pattern: String) = Date(this).formatString(pattern)
-
-/**
- * calendar轉string
- *
- * @param pattern 格式
- * @return 日期
- */
-fun Calendar.formatString(pattern: String) = time.formatString(pattern)
 //endregion
 
 //region log
@@ -832,33 +766,6 @@ fun Location.distanceTo(lat: Double, lon: Double) = FloatArray(1).also {
 }[0].toInt()
 
 /**
- * 導航至
- *
- * @param lat 緯度
- * @param lon 經度
- */
-fun Context.navigationTo(lat: Double, lon: Double) {
-    openActivity(getIntentWithSingleTop().also {
-        it.action = Intent.ACTION_VIEW
-        it.data = Uri.parse("http://maps.google.com/maps?daddr=$lat,$lon")
-        it.`package` = "com.google.android.apps.maps"
-    })
-}
-
-/**
- * 搜尋位置
- *
- * @param location 位置
- */
-fun Context.searchLocation(location: String) {
-    openActivity(getIntentWithSingleTop().also {
-        it.action = Intent.ACTION_VIEW
-        it.data = Uri.parse("geo:0,0?q=${location}")
-        it.`package` = "com.google.android.apps.maps"
-    })
-}
-
-/**
  * 經緯度轉縣市
  *
  * @param lat 緯度
@@ -870,9 +777,7 @@ fun Context.locationToCity(lat: Double, lon: Double, onSuccess: (area: String) -
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         geocoder.getFromLocation(lat, lon, 1) {
-            if (isNullOrEmpty(it)) return@getFromLocation
-
-            it[0]?.also { address ->
+            it.getOrNull(0)?.also { address ->
                 if (isNullOrEmpty(address.adminArea)) {
                     onSuccess(address.subAdminArea)
                 } else {
@@ -881,14 +786,12 @@ fun Context.locationToCity(lat: Double, lon: Double, onSuccess: (area: String) -
             }
         }
     } else {
-        val addressList = geocoder.getFromLocation(lat, lon, 1)
-        if (isNullOrEmpty(addressList)) return
-        val address = addressList!![0]
-
-        if (isNullOrEmpty(address.adminArea)) {
-            onSuccess(address.subAdminArea)
-        } else {
-            onSuccess(address.adminArea)
+        geocoder.getFromLocation(lat, lon, 1)?.getOrNull(0)?.also {
+            if (isNullOrEmpty(it.adminArea)) {
+                onSuccess(it.subAdminArea)
+            } else {
+                onSuccess(it.adminArea)
+            }
         }
     }
 }
@@ -905,9 +808,7 @@ fun Context.locationToArea(lat: Double, lon: Double, onSuccess: (area: String) -
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         geocoder.getFromLocation(lat, lon, 1) {
-            if (isNullOrEmpty(it)) return@getFromLocation
-
-            it[0]?.also { address ->
+            it.getOrNull(0)?.also { address ->
                 if (isNullOrEmpty(address.locality)) {
                     onSuccess(address.subLocality)
                 } else {
@@ -916,14 +817,12 @@ fun Context.locationToArea(lat: Double, lon: Double, onSuccess: (area: String) -
             }
         }
     } else {
-        val addressList = geocoder.getFromLocation(lat, lon, 1)
-        if (isNullOrEmpty(addressList)) return
-        val address = addressList!![0]
-
-        if (isNullOrEmpty(address.locality)) {
-            onSuccess(address.subLocality)
-        } else {
-            onSuccess(address.locality)
+        geocoder.getFromLocation(lat, lon, 1)?.getOrNull(0)?.also {
+            if (isNullOrEmpty(it.locality)) {
+                onSuccess(it.subLocality)
+            } else {
+                onSuccess(it.locality)
+            }
         }
     }
 }
@@ -947,7 +846,7 @@ fun Context.isGpsOpen(): Boolean {
             positive = getString(R.string.setting)
         ) { type ->
             if (type != DialogInterface.BUTTON_POSITIVE) return@message
-            openActivity(getIntentWithSingleTop().also {
+            startActivity(getIntentWithSingleTop().also {
                 it.action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
             })
         }.show()
@@ -958,17 +857,6 @@ fun Context.isGpsOpen(): Boolean {
 //endregion
 
 //region file
-/**
- * file轉base64
- * @return base64
- */
-fun File.toBase64() = try {
-    Base64.encodeToString(readBytes(), Base64.DEFAULT)
-} catch (e: AssertionError) {
-    e.print()
-    null
-}
-
 /**
  * 創建file
  *
@@ -1169,8 +1057,11 @@ fun Context.initNotification(
     intent: Intent? = null,
     init: ((builder: NotificationCompat.Builder) -> Unit)? = null
 ): Notification = NotificationCompat.Builder(this, CHANNEL_ID).also {
-    it.setContentTitle(title).setContentText(content).setSmallIcon(smallIconRes)
-        .setNumber(badge).priority = NotificationCompat.PRIORITY_DEFAULT
+    it.setContentTitle(title)
+        .setContentText(content)
+        .setSmallIcon(smallIconRes)
+        .setNumber(badge)
+        .priority = NotificationCompat.PRIORITY_DEFAULT
 
     // 點擊跳頁
     intent?.also { intent ->
@@ -1178,7 +1069,10 @@ fun Context.initNotification(
 
         it.setContentIntent(
             PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
         ).setAutoCancel(true)
     }
@@ -1209,12 +1103,15 @@ fun Context.sendNotification(
 
     manager.createNotificationChannel(
         NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
-            .setName(CHANNEL_NAME).setSound(sound, Notification.AUDIO_ATTRIBUTES_DEFAULT).build()
+            .setName(CHANNEL_NAME)
+            .setSound(sound, Notification.AUDIO_ATTRIBUTES_DEFAULT)
+            .build()
     )
 
     if (isPermissionsGranted(Manifest.permission.POST_NOTIFICATIONS)) {
         manager.notify(
-            NOTIFICATION_ID, initNotification(title, content, smallIconRes, badge, intent, init)
+            NOTIFICATION_ID,
+            initNotification(title, content, smallIconRes, badge, intent, init)
         )
     }
 }
@@ -1241,24 +1138,33 @@ fun Context.getIntentWithSingleTop(clazz: Class<*>? = null, bundle: Bundle? = nu
 /**
  * 導去指定頁
  */
-fun Context.openActivity(intent: Intent) {
-    startActivity(intent)
+fun Context.openActivity(clazz: Class<*>? = null, bundle: Bundle? = null) {
+    startActivity(getIntentWithSingleTop(clazz, bundle))
 }
 
 /**
- * 導去指定頁
+ * 導去該網址
+ *
+ * @param toolbarTitle toolbar標題
+ * @param url 網址
+ * @param isWebView 是否使用webView
  */
-fun Context.openActivity(
-    clazz: Class<*>? = null, bundle: Bundle? = null
-) {
-    openActivity(getIntentWithSingleTop(clazz, bundle))
+fun Context.openUrl(toolbarTitle: String, url: String, isWebView: Boolean = IS_WEB_VIEW) {
+    if (!isWebView) { // chrome
+        startActivity(getIntentWithSingleTop().also {
+            it.action = Intent.ACTION_VIEW
+            it.data = Uri.parse(url)
+        })
+    } else { // 內嵌網頁
+        openActivity(WebViewActivity::class.java, bundleOf("title" to toolbarTitle, "data" to url))
+    }
 }
 
 /**
  * 導去設定頁
  */
 fun Context.openSetting() {
-    openActivity(getIntentWithSingleTop().also {
+    startActivity(getIntentWithSingleTop().also {
         it.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
         it.data = Uri.parse("package:$packageName")
         it.addCategory(Intent.CATEGORY_DEFAULT)
@@ -1269,14 +1175,50 @@ fun Context.openSetting() {
  * 撥打電話
  */
 fun Context.callPhone(tel: String) {
-    openActivity(getIntentWithSingleTop().also {
+    startActivity(getIntentWithSingleTop().also {
         it.action = Intent.ACTION_DIAL
         it.data = Uri.parse("tel:${tel}")
+    })
+}
+
+/**
+ * 導航至
+ *
+ * @param lat 緯度
+ * @param lon 經度
+ */
+fun Context.navigationTo(lat: Double, lon: Double) {
+    startActivity(getIntentWithSingleTop().also {
+        it.action = Intent.ACTION_VIEW
+        it.data = Uri.parse("http://maps.google.com/maps?daddr=$lat,$lon")
+        it.`package` = "com.google.android.apps.maps"
+    })
+}
+
+/**
+ * 搜尋位置
+ *
+ * @param location 位置
+ */
+fun Context.searchLocation(location: String) {
+    startActivity(getIntentWithSingleTop().also {
+        it.action = Intent.ACTION_VIEW
+        it.data = Uri.parse("geo:0,0?q=${location}")
+        it.`package` = "com.google.android.apps.maps"
     })
 }
 //endregion
 
 //region 額外方法
+/**
+ * byte轉base64
+ *
+ * @return base64
+ */
+fun ByteArray.toBase64() = runCatching {
+    Base64.encodeToString(this, Base64.DEFAULT)
+}.getOrNull()
+
 /**
  * 取得attr值
  *
@@ -1289,14 +1231,22 @@ fun Context.getAttrValue(@AttrRes attrRes: Int) = TypedValue().also {
 /**
  * dp to px
  */
-fun Context.dp(dp: Float) =
-    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics)
+val Float.dp
+    get() = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        this,
+        Resources.getSystem().displayMetrics
+    )
 
 /**
  * sp to px
  */
-fun Context.sp(sp: Float) =
-    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, sp, resources.displayMetrics)
+val Float.sp
+    get() = TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_SP,
+        this,
+        Resources.getSystem().displayMetrics
+    )
 
 /**
  * 產生28個字元的密鑰雜湊

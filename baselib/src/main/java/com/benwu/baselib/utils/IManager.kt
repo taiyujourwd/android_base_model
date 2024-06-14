@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.R
 import com.benwu.baselib.activity.BaseActivity
-import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.extension.hideKeyboard
 import com.benwu.baselib.extension.toast
 import com.benwu.baselib.recyclerview.ViewHolder
@@ -18,8 +17,6 @@ import com.benwu.baselib.recyclerview.ViewHolder
 interface IUiInit<V : ViewBinding> : View.OnClickListener {
 
     val mActivity: BaseActivity<*>
-
-    val mApplication: BaseApplication
 
     val binding: V
 
@@ -124,7 +121,7 @@ interface IAdapterInit<T, V : ViewBinding> {
 
     fun getPosition(holder: ViewHolder<V>) = holder.bindingAdapterPosition
 
-    fun getDta(holder: ViewHolder<V>): T?
+    fun getData(holder: ViewHolder<V>): T?
 
     fun setOnItemClickListener(listener: ((View?, Int, T?) -> Unit))
 
@@ -134,7 +131,7 @@ interface IAdapterInit<T, V : ViewBinding> {
     fun setOnClickListeners(holder: ViewHolder<V>, vararg views: View) {
         views.forEach { view ->
             view.setOnClickListener {
-                onClick(it, getPosition(holder), getDta(holder))
+                onClick(it, getPosition(holder), getData(holder))
             }
         }
     }

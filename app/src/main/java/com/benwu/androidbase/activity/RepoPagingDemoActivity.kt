@@ -35,7 +35,7 @@ class RepoPagingDemoActivity : BaseActivity<IncludeRepoBinding>(),
     }
 
     override fun initView() {
-        binding.includeToolbar.toolbar.init(mActivity, "Paging 3")
+        binding.toolbar.init(mActivity, "Paging 3")
 
         initRepoRv()
 

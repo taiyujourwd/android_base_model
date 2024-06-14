@@ -2,6 +2,7 @@ package com.benwu.baselib.dialog_fragment
 
 import android.app.Dialog
 import android.content.Context
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
-import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
@@ -40,12 +40,10 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
     protected var mWindow: Window? = null
         private set
 
-    protected var height = ViewGroup.LayoutParams.WRAP_CONTENT // 高度
-    protected var isWindowMatch = false // 是否與螢幕同寬
+    open val width = (Resources.getSystem().displayMetrics.widthPixels * 0.85).toInt() // 寬度
+    open val height = ViewGroup.LayoutParams.WRAP_CONTENT // 高度
 
     override val mActivity get() = _mActivity
-
-    override val mApplication get() = mActivity.application as BaseApplication
 
     override val binding get() = _binding
 
@@ -54,7 +52,6 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
     //region 生命週期
     override fun onAttach(context: Context) {
         super.onAttach(context)
-
         _mActivity = context as BaseActivity<*>
     }
 
@@ -79,20 +76,13 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
         super.onViewCreated(view, savedInstanceState)
 
         mWindow?.setBackgroundDrawable(null)
-
-        // 調整View占用屏幕比例
-        mWindow?.setLayout(
-            if (isWindowMatch) { // 滿版
-                ViewGroup.LayoutParams.MATCH_PARENT
-            } else { // 寬占85%
-                (resources.displayMetrics.widthPixels * 0.85).toInt()
-            },
-            height
-        )
+        mWindow?.setLayout(width, height)
 
         arguments?.also { getBundle(it) }
         initView()
         observer()
+
+        setOnClickListeners(binding.root)
     }
 
     override fun onResume() {

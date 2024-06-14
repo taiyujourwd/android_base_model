@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.benwu.baselib.adapter
 
 import android.content.Context
@@ -73,7 +71,7 @@ abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: Dif
     override fun getItemViewType(position: Int) = if (position == itemCount) VIEW_TYPE_FOOTER else 0
     //endregion
 
-    override fun getDta(holder: ViewHolder<V>): T? = getItem(getPosition(holder))
+    override fun getData(holder: ViewHolder<V>): T? = getItem(getPosition(holder))
 
     override fun setOnItemClickListener(listener: (View?, Int, T?) -> Unit) {
         _onItemClickListener = listener
