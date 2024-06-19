@@ -1,4 +1,4 @@
-package com.benwu.baselib.recyclerview
+package com.benwu.baselib.extension.recyclerview
 
 import android.graphics.Rect
 import android.view.View

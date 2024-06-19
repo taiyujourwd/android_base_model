@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.extension.isNullOrEmpty
-import com.benwu.baselib.recyclerview.ViewHolder
+import com.benwu.baselib.extension.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
 
 abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallback<T>) :

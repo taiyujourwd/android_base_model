@@ -4,20 +4,15 @@
     <string name="notice">通知</string>
 
     <!-- button -->
-    <string name="open">開啟</string>
     <string name="setting">設定</string>
     <string name="retry">重試</string>
     <string name="download">下載</string>
     <string name="sure">確定</string>
     <string name="cancel">取消</string>
-    <string name="finish">完成</string>
-    <string name="clear">清除</string>
-    <string name="update">更新</string>
     <string name="yes">是</string>
     <string name="no">否</string>
 
     <!-- message -->
-    <string name="un_open_fun">此功能尚未開放，敬請期待！</string>
     <string name="exit_app">再按一次退出</string>
     <string name="input_empty">尚有欄位未填寫</string>
     <string name="data_empty">尚無資料</string>
@@ -25,18 +20,10 @@
     <string name="reconnect">重新連線中．．．</string>
     <string name="loading">讀取中．．．</string>
     <string name="downloading">下載中．．．</string>
-    <string name="download_msg">是否下載「%s」檔案？</string>
+    <string name="download_msg">確定下載「%1$s」檔案？</string>
     <string name="download_notice">檔案下載已經於背景下執行。</string>
-    <string name="permission_denied">尚未允許「%s」權限，請至「設定」授予權限，即可使用此功能。</string>
+    <string name="permission_denied">請至「設定」授予「%1$s」權限，即可使用此功能。</string>
     <string name="open_web">是否開啟網頁？</string>
-    <string name="open_gps">尚未開啟GPS，請至「設定」授予權限，即可使用此功能。</string>
+    <string name="open_gps">請至「設定」開啟GPS，即可使用此功能。</string>
 
-    <!-- date time -->
-    <string name="year">年</string>
-    <string name="season">季</string>
-    <string name="month">月</string>
-    <string name="week">周</string>
-    <string name="day">日</string>
-    <string name="hour">時</string>
-    <string name="minute">分</string>
 </resources>

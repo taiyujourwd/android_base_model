@@ -11,12 +11,10 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -37,7 +35,6 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
 import androidx.appcompat.app.AppCompatActivity
@@ -61,17 +58,14 @@ import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.activity.WebViewActivity
 import com.benwu.baselib.adapter.FragmentVpAdapter
 import com.benwu.baselib.api.ApiState
-import com.benwu.baselib.extension.view.BaseGridLayoutManager
-import com.benwu.baselib.extension.view.BaseLinearLayoutManager
-import com.benwu.baselib.recyclerview.SpaceItemDecoration
-import com.benwu.baselib.recyclerview.ViewHolder
+import com.benwu.baselib.extension.recyclerview.BaseGridLayoutManager
+import com.benwu.baselib.extension.recyclerview.BaseLinearLayoutManager
+import com.benwu.baselib.extension.recyclerview.SpaceItemDecoration
+import com.benwu.baselib.extension.recyclerview.ViewHolder
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.shape.CornerFamily
-import com.google.android.material.shape.MaterialShapeDrawable
-import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -88,80 +82,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Stack
-import java.util.zip.ZipInputStream
-
-//region background
-/**
- * 設置角邊背景
- *
- * @param topLeftRadius 半徑(左上)
- * @param topRightRadius 半徑(右上)
- * @param bottomLeftRadius 半徑(左下)
- * @param bottomRightRadius 半徑(右下)
- * @param fillColor 填色
- * @param strokeWidth 框寬度
- * @param strokeColor 框顏色
- * @param cornerFamily 角邊樣式
- */
-fun createBackgroundCorner(
-    topLeftRadius: Float = 0f,
-    topRightRadius: Float = 0f,
-    bottomLeftRadius: Float = 0f,
-    bottomRightRadius: Float = 0f,
-    @ColorInt fillColor: Int = 0,
-    strokeWidth: Float = 0f,
-    @ColorInt strokeColor: Int = 0,
-    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED
-): MaterialShapeDrawable {
-    val shape = ShapeAppearanceModel().toBuilder()
-        .setTopLeftCorner(cornerFamily, topLeftRadius.dp)
-        .setTopRightCorner(cornerFamily, topRightRadius.dp)
-        .setBottomLeftCorner(cornerFamily, bottomLeftRadius.dp)
-        .setBottomRightCorner(cornerFamily, bottomRightRadius.dp)
-        .build()
-
-    return MaterialShapeDrawable(shape).also {
-        it.fillColor = ColorStateList.valueOf(fillColor)
-        it.setStroke(strokeWidth.dp, strokeColor)
-    }
-}
-
-/**
- * 設置角邊背景
- *
- * @param radius 半徑
- * @param fillColor 填色
- * @param strokeWidth 框寬度
- * @param strokeColor 框顏色
- * @param cornerFamily 角邊樣式
- */
-fun createBackgroundCorner(
-    radius: Float,
-    @ColorInt fillColor: Int = 0,
-    strokeWidth: Float = 0f,
-    @ColorInt strokeColor: Int = 0,
-    @CornerFamily cornerFamily: Int = CornerFamily.ROUNDED
-) = createBackgroundCorner(
-    radius,
-    radius,
-    radius,
-    radius,
-    fillColor,
-    strokeWidth,
-    strokeColor,
-    cornerFamily
-)
-
-/**
- * 設置裁切背景
- *
- * @param drawable 背景
- */
-fun View.setClipBackground(drawable: Drawable) {
-    background = drawable
-    clipToOutline = true
-}
-//endregion
 
 //region bar
 /**
@@ -743,7 +663,7 @@ fun AppCompatActivity.isPermissionRationale(vararg permissions: String) = permis
  * @return 權限遭拒訊息
  */
 fun Context.permissionDeniedMsg(permissionsName: String) =
-    String.format(getString(R.string.permission_denied), permissionsName).message(
+    getString(R.string.permission_denied, permissionsName).message(
         this,
         getString(R.string.cancel),
         positive = getString(R.string.setting)
@@ -897,34 +817,6 @@ fun File.fromBitmap(fileName: String, bitmap: Bitmap): File {
 }
 
 /**
- * 解壓縮
- */
-fun File.unzip(input: InputStream) {
-    if (!exists()) mkdir()
-
-    ZipInputStream(input).also {
-        var entry = it.nextEntry
-
-        while (!isNullOrEmpty(entry)) {
-            val file = File(this, entry.name)
-            if (!file.canonicalPath.startsWith(canonicalPath)) return@also
-
-            if (entry.isDirectory) {
-                file.mkdirs()
-            } else {
-                file.parentFile?.mkdirs()
-                it.buffered().copyTo(file.outputStream())
-            }
-
-            it.closeEntry()
-            entry = it.nextEntry
-        }
-
-        it.close()
-    }
-}
-
-/**
  * 刪除主目錄
  */
 fun File.deleteDir() {
@@ -1028,11 +920,14 @@ fun Context.downloadDialog(
     url: String,
     fileName: String,
     init: ((DownloadManager.Request) -> Unit)? = null
-) = String.format(getString(R.string.download_msg), fileName)
-    .message(this, getString(R.string.no), positive = getString(R.string.yes)) {
-        if (it != DialogInterface.BUTTON_POSITIVE) return@message
-        download(url, fileName, init)
-    }
+) = getString(R.string.download_msg, fileName).message(
+    this,
+    getString(R.string.cancel),
+    positive = getString(R.string.download)
+) {
+    if (it != DialogInterface.BUTTON_POSITIVE) return@message
+    download(url, fileName, init)
+}
 //endregion
 
 //region 推播

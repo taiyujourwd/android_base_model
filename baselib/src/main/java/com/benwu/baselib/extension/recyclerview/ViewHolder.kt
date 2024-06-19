@@ -1,4 +1,4 @@
-package com.benwu.baselib.recyclerview
+package com.benwu.baselib.extension.recyclerview
 
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding

@@ -4,23 +4,15 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.AttributeSet
 import com.benwu.baselib.R
-import com.google.android.material.textview.MaterialTextView
+import com.benwu.baselib.extension.shapeable.ShapeableTextView
 
-class ConcatTextView : MaterialTextView {
+class ConcatTextView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : ShapeableTextView(context, attrs, defStyleAttr) {
 
-    constructor(context: Context) : this(context, null, 0)
-
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-
-    constructor(
-        context: Context,
-        attrs: AttributeSet?,
-        defStyleAttr: Int
-    ) : super(context, attrs, defStyleAttr) {
-        initView(context, attrs)
-    }
-
-    private fun initView(context: Context, attrs: AttributeSet?) {
+    init {
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.ConcatTextView)
 
         text = TextUtils.concat(

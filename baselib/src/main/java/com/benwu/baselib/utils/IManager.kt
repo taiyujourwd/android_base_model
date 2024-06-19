@@ -8,11 +8,9 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
-import com.benwu.baselib.R
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.hideKeyboard
-import com.benwu.baselib.extension.toast
-import com.benwu.baselib.recyclerview.ViewHolder
+import com.benwu.baselib.extension.recyclerview.ViewHolder
 
 interface IUiInit<V : ViewBinding> : View.OnClickListener {
 
@@ -48,17 +46,6 @@ interface IUiInit<V : ViewBinding> : View.OnClickListener {
      * 觀察者
      */
     fun observer()
-
-    /**
-     * 是否啟用全部功能
-     *
-     * @return 是否啟用
-     */
-    fun isEnableAllFun(): Boolean {
-        val isEnable = false
-        if (!isEnable) mActivity.getString(R.string.un_open_fun).toast(mActivity).show()
-        return isEnable
-    }
 
     /**
      * 設置view的點擊事件

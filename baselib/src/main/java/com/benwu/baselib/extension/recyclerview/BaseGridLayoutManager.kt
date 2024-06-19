@@ -1,4 +1,4 @@
-package com.benwu.baselib.extension.view
+package com.benwu.baselib.extension.recyclerview
 
 import android.content.Context
 import androidx.annotation.IntRange

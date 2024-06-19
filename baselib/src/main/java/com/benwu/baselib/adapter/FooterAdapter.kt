@@ -9,7 +9,7 @@ import androidx.paging.LoadState
 import androidx.paging.LoadStateAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.benwu.baselib.databinding.ListItemFooterBinding
-import com.benwu.baselib.recyclerview.ViewHolder
+import com.benwu.baselib.extension.recyclerview.ViewHolder
 
 class FooterAdapter(val retry: () -> Unit) : LoadStateAdapter<ViewHolder<ListItemFooterBinding>>(),
     View.OnClickListener {
