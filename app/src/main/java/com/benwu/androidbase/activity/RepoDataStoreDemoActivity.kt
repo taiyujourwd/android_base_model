@@ -6,12 +6,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
 import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.benwu.androidbase.adapter.RepoRvAdapter
 import com.benwu.androidbase.data.Repo
 import com.benwu.androidbase.databinding.IncludeRepoBinding
 import com.benwu.androidbase.dialog_fragment.RepoDetailDialogFragment
+import com.benwu.androidbase.extension.REPO
 import com.benwu.androidbase.extension.dataStore
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
@@ -98,9 +98,5 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
                 RepoDetailDialogFragment.newInstance(it).show(supportFragmentManager, "repo")
             }
         }
-    }
-
-    companion object {
-        private val REPO = stringPreferencesKey("repo")
     }
 }
