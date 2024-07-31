@@ -2,6 +2,7 @@
 <resources>
     <declare-styleable name="LoadingView">
         <attr name="message" format="string" />
+        <attr name="retryButton" format="string" />
     </declare-styleable>
 
     <declare-styleable name="ConcatTextView">

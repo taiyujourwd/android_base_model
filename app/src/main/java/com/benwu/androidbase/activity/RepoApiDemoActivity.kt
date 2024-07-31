@@ -38,6 +38,7 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
         initRepoRv()
 
         binding.srl.setOnRefreshListener(this)
+        binding.loading.retry { getData() }
     }
 
     override fun getData() {

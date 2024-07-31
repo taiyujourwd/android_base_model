@@ -55,7 +55,7 @@ interface IUiInit<V : ViewBinding> : View.OnClickListener {
     }
 
     override fun onClick(v: View?) {
-        mActivity.hideKeyboard(v)
+        hideKeyboard(mActivity, v)
     }
 }
 
@@ -120,7 +120,7 @@ interface IAdapterInit<T, V : ViewBinding> {
     }
 
     fun onClick(view: View?, position: Int, data: T?) {
-        mContext.hideKeyboard(view)
+        hideKeyboard(mContext, view)
     }
 
     companion object {

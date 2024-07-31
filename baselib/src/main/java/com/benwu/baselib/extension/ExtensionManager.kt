@@ -181,8 +181,8 @@ fun TextInputEditText.addFilter(newInputFilter: InputFilter) {
 /**
  * 關閉鍵盤
  */
-fun Context.hideKeyboard(view: View?) {
-    val manager = getSystemService(InputMethodManager::class.java)
+fun hideKeyboard(context: Context, view: View?) {
+    val manager = context.getSystemService(InputMethodManager::class.java)
     view?.also { manager.hideSoftInputFromWindow(it.windowToken, 0) }
 }
 //endregion
