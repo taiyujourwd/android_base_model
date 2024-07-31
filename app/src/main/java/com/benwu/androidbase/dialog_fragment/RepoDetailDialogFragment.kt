@@ -1,6 +1,7 @@
 package com.benwu.androidbase.dialog_fragment
 
 import android.os.Bundle
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,11 @@ class RepoDetailDialogFragment :
     override fun initView() {
         binding.tvTitle.text = repo?.name
         binding.tvStarCount.text = repo?.starCount?.toString()
-        binding.tvContent.text = repo?.description
+
+        binding.tvContent.also {
+            it.text = repo?.description
+            it.movementMethod = ScrollingMovementMethod()
+        }
     }
 
     override fun getData() {

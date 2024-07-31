@@ -16,7 +16,7 @@ import com.benwu.androidbase.extension.dataStore
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
-import com.benwu.baselib.extension.showSnackbar
+import com.benwu.baselib.extension.showBottomSheetDialogFragment
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -73,9 +73,7 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
             launch {
                 viewModel.baseUiState.collectLatest {
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = it.isLoading
-                    loadingDialog.toggle(!binding.srl.isRefreshing && it.isLoading)
-                    if (!it.isError) return@collectLatest
-                    showSnackbar(binding.root, getString(com.benwu.baselib.R.string.api_error))
+                    binding.loading.toggle(it.isLoading && !binding.srl.isRefreshing, it.isError)
                 }
             }
         }
@@ -95,7 +93,11 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
 
         adapter.setOnItemClickListener { _, _, item ->
             item?.also {
-                RepoDetailDialogFragment.newInstance(it).show(supportFragmentManager, "repo")
+                showBottomSheetDialogFragment(
+                    RepoDetailDialogFragment.newInstance(it),
+                    supportFragmentManager,
+                    "repo"
+                )
             }
         }
     }

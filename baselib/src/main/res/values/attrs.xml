@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <declare-styleable name="LoadingView">
+        <attr name="message" format="string" />
+    </declare-styleable>
+
     <declare-styleable name="ConcatTextView">
         <attr name="prefixText" format="string" />
         <attr name="suffixText" format="string" />

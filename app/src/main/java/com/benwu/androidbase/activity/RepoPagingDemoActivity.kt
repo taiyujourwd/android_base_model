@@ -13,8 +13,9 @@ import com.benwu.androidbase.databinding.IncludeRepoBinding
 import com.benwu.androidbase.dialog_fragment.RepoDetailDialogFragment
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
+import com.benwu.baselib.adapter.FooterAdapter
 import com.benwu.baselib.extension.init
-import com.benwu.baselib.extension.showSnackbar
+import com.benwu.baselib.extension.showBottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -58,10 +59,9 @@ class RepoPagingDemoActivity : BaseActivity<IncludeRepoBinding>(),
             launch {
                 adapter.loadStateFlow.collectLatest { loadState ->
                     val isLoading = loadState.refresh is LoadState.Loading
+                    val isError = loadState.refresh is LoadState.Error
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = isLoading
-                    loadingDialog.toggle(!binding.srl.isRefreshing && isLoading)
-                    if (loadState.refresh !is LoadState.Error) return@collectLatest
-                    showSnackbar(binding.root, getString(com.benwu.baselib.R.string.api_error))
+                    binding.loading.toggle(isLoading && !binding.srl.isRefreshing, isError)
                 }
             }
         }
@@ -77,11 +77,15 @@ class RepoPagingDemoActivity : BaseActivity<IncludeRepoBinding>(),
 
     private fun initRepoRv() {
         adapter = RepoPagingDemoRvAdapter()
-        binding.rv.init(adapter)
+        binding.rv.init(adapter.withLoadStateFooter(FooterAdapter(adapter::retry)))
 
         adapter.setOnItemClickListener { _, _, item ->
             item?.also {
-                RepoDetailDialogFragment.newInstance(it).show(supportFragmentManager, "repo")
+                showBottomSheetDialogFragment(
+                    RepoDetailDialogFragment.newInstance(it),
+                    supportFragmentManager,
+                    "repo"
+                )
             }
         }
     }
