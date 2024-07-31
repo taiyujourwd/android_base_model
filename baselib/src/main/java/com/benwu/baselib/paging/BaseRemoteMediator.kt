@@ -4,8 +4,8 @@ import androidx.paging.ExperimentalPagingApi
 import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
+import com.benwu.baselib.extension.debugPrint
 import com.benwu.baselib.extension.isNullOrEmpty
-import com.benwu.baselib.extension.print
 import retrofit2.HttpException
 
 @ExperimentalPagingApi
@@ -32,10 +32,10 @@ abstract class BaseRemoteMediator<T : Any>(private val loadSize: Int) : RemoteMe
 
             MediatorResult.Success(isNullOrEmpty(dataList))
         } catch (e: Exception) {
-            e.print()
+            e.debugPrint()
             MediatorResult.Error(e)
         } catch (e: HttpException) {
-            e.print()
+            e.debugPrint()
             MediatorResult.Error(e)
         }
     }

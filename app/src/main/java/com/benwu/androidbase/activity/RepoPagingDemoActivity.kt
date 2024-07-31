@@ -14,7 +14,7 @@ import com.benwu.androidbase.dialog_fragment.RepoDetailDialogFragment
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
-import com.benwu.baselib.extension.snackbar
+import com.benwu.baselib.extension.showSnackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -61,7 +61,7 @@ class RepoPagingDemoActivity : BaseActivity<IncludeRepoBinding>(),
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = isLoading
                     loadingDialog.toggle(!binding.srl.isRefreshing && isLoading)
                     if (loadState.refresh !is LoadState.Error) return@collectLatest
-                    getString(com.benwu.baselib.R.string.api_error).snackbar(binding.root).show()
+                    showSnackbar(binding.root, getString(com.benwu.baselib.R.string.api_error))
                 }
             }
         }

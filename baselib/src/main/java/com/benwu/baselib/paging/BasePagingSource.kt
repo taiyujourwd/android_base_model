@@ -2,8 +2,8 @@ package com.benwu.baselib.paging
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.benwu.baselib.extension.debugPrint
 import com.benwu.baselib.extension.isNullOrEmpty
-import com.benwu.baselib.extension.print
 import retrofit2.HttpException
 
 abstract class BasePagingSource<T : Any> : PagingSource<Int, T>() {
@@ -11,16 +11,17 @@ abstract class BasePagingSource<T : Any> : PagingSource<Int, T>() {
     override suspend fun load(params: LoadParams<Int>) = try {
         val page = params.key ?: 1
         val dataList = getDataList(page, params.loadSize)
+
         LoadResult.Page(
             dataList ?: listOf(),
             getPrevKey(page, dataList),
             getNextKey(page, dataList)
         )
     } catch (e: Exception) {
-        e.print()
+        e.debugPrint()
         LoadResult.Error(e)
     } catch (e: HttpException) {
-        e.print()
+        e.debugPrint()
         LoadResult.Error(e)
     }
 

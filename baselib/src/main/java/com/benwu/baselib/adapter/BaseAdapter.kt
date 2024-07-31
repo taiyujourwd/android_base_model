@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package com.benwu.baselib.adapter
 
 import android.content.Context
@@ -8,12 +10,14 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
+import com.benwu.baselib.databinding.IncludeDataEmptyBinding
 import com.benwu.baselib.extension.isNullOrEmpty
 import com.benwu.baselib.extension.recyclerview.ViewHolder
 import com.benwu.baselib.utils.IAdapterInit
+import com.benwu.baselib.utils.IAdapterInit.Companion.VIEW_TYPE_DATA_EMPTY
 
 abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallback<T>) :
-    ListAdapter<T, ViewHolder<V>>(diffCallback), IAdapterInit<T, V> {
+    ListAdapter<T, ViewHolder>(diffCallback), IAdapterInit<T, V> {
 
     private lateinit var _mRecyclerView: RecyclerView
     private lateinit var _mContext: Context
@@ -33,11 +37,20 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
         _mContext = recyclerView.context
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        ViewHolder(bindViewBinding(LayoutInflater.from(mContext), parent, viewType))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val layoutInflater = LayoutInflater.from(parent.context)
+
+        val binding = if (viewType == VIEW_TYPE_DATA_EMPTY) {
+            IncludeDataEmptyBinding.inflate(layoutInflater, parent, false)
+        } else {
+            bindViewBinding(layoutInflater, parent, viewType)
+        }
+
+        return ViewHolder(binding)
+    }
 
     override fun onBindViewHolder(
-        holder: ViewHolder<V>,
+        holder: ViewHolder,
         position: Int,
         payloads: MutableList<Any>
     ) {
@@ -48,17 +61,26 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
         }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder<V>, position: Int) {
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         bindViewHolder(holder, position, null)
     }
 
-    override fun bindViewHolder(holder: ViewHolder<V>, position: Int, payloads: MutableList<Any>?) {
-        bindView(holder.binding, position, getItem(position), payloads)
-        bindOnClickListener(holder)
+    override fun bindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>?) {
+        if (holder.binding !is IncludeDataEmptyBinding) {
+            val binding = holder.binding as V
+            bindView(binding, position, getItem(position), payloads)
+            bindOnClickListener(holder, binding)
+        }
+    }
+
+    override fun getItemViewType(position: Int) = if (isNullOrEmpty(currentList)) {
+        VIEW_TYPE_DATA_EMPTY
+    } else {
+        super.getItemViewType(position)
     }
     //endregion
 
-    override fun getData(holder: ViewHolder<V>): T? = getItem(getPosition(holder))
+    override fun getData(holder: ViewHolder): T? = getItem(getPosition(holder))
 
     override fun setOnItemClickListener(listener: (View?, Int, T?) -> Unit) {
         _onItemClickListener = listener

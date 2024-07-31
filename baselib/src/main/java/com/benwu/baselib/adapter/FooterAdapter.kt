@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.benwu.baselib.databinding.ListItemFooterBinding
 import com.benwu.baselib.extension.recyclerview.ViewHolder
 
-class FooterAdapter(val retry: () -> Unit) : LoadStateAdapter<ViewHolder<ListItemFooterBinding>>(),
+class FooterAdapter(val retry: () -> Unit) : LoadStateAdapter<ViewHolder>(),
     View.OnClickListener {
 
     private lateinit var mRecyclerView: RecyclerView
@@ -28,10 +28,11 @@ class FooterAdapter(val retry: () -> Unit) : LoadStateAdapter<ViewHolder<ListIte
     override fun onCreateViewHolder(parent: ViewGroup, loadState: LoadState) =
         ViewHolder(ListItemFooterBinding.inflate(LayoutInflater.from(mContext), parent, false))
 
-    override fun onBindViewHolder(holder: ViewHolder<ListItemFooterBinding>, loadState: LoadState) {
-        holder.binding.lavProgress.isVisible = loadState is LoadState.Loading
-        holder.binding.groupError.isVisible = loadState is LoadState.Error
-        holder.binding.btnRetry.setOnClickListener(this)
+    override fun onBindViewHolder(holder: ViewHolder, loadState: LoadState) {
+        val binding = holder.binding as ListItemFooterBinding
+        binding.progress.isVisible = loadState is LoadState.Loading
+        binding.error.isVisible = loadState is LoadState.Error
+        binding.retry.setOnClickListener(this)
     }
 
     override fun onClick(v: View?) {

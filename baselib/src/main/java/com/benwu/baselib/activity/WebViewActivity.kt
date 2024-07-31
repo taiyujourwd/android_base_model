@@ -16,12 +16,11 @@ import androidx.core.view.WindowInsetsCompat
 import com.benwu.baselib.R
 import com.benwu.baselib.databinding.ActivityWebViewBinding
 import com.benwu.baselib.extension.init
-import com.benwu.baselib.extension.message
+import com.benwu.baselib.extension.showNotice
 
 class WebViewActivity : BaseActivity<ActivityWebViewBinding>() {
 
     private val wvLoad get() = binding.wvLoad
-
     private val wv get() = binding.wv
 
     private var toolbarTitle = "" // toolbar標題
@@ -83,21 +82,22 @@ class WebViewActivity : BaseActivity<ActivityWebViewBinding>() {
                 handler: SslErrorHandler?,
                 error: SslError?
             ) {
-                getString(R.string.open_web).message(
+                showNotice(
                     mActivity,
-                    negative = getString(R.string.no),
-                    positive = getString(R.string.yes)
+                    getString(R.string.open_web),
+                    positive = getString(R.string.yes),
+                    negative = getString(R.string.no)
                 ) {
                     when (it) {
-                        DialogInterface.BUTTON_NEGATIVE -> {
-                            handler?.cancel()
-                        }
-
                         DialogInterface.BUTTON_POSITIVE -> {
                             handler?.proceed()
                         }
+
+                        else -> {
+                            handler?.cancel()
+                        }
                     }
-                }.show()
+                }
             }
         }
 

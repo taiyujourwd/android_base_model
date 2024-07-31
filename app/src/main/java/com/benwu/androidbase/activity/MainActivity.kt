@@ -53,13 +53,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
         adapter.setOnItemClickListener { _, _, demo ->
             when (demo?.title) {
-                "Google" -> openUrl(demo.title, "https://www.google.com")
+                "Google" -> openUrl(mActivity, demo.title, "https://www.google.com")
 
-                "Retrofit" -> openActivity(RepoApiDemoActivity::class.java)
+                "Retrofit" -> openActivity(mActivity, RepoApiDemoActivity::class.java)
 
-                "Paging 3" -> openActivity(RepoPagingDemoActivity::class.java)
+                "Paging 3" -> openActivity(mActivity, RepoPagingDemoActivity::class.java)
 
-                "DataStore" -> openActivity(RepoDataStoreDemoActivity::class.java)
+                "DataStore" -> openActivity(mActivity, RepoDataStoreDemoActivity::class.java)
             }
         }
     }

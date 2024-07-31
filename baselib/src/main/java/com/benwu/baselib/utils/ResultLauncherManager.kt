@@ -42,11 +42,11 @@ class PermissionsResultLauncher(caller: ActivityResultCaller) {
         launcher =
             caller.registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
                 when {
-                    activity.isPermissionsGranted(*permissions) -> { // 授予權限
+                    isPermissionsGranted(activity, *permissions) -> { // 授予權限
                         callback.onActivityResult(GRANTED)
                     }
 
-                    activity.isPermissionRationale(*permissions) -> { // 權限遭拒 向用戶解釋要求此權限原因
+                    isPermissionRationale(activity, *permissions) -> { // 權限遭拒 向用戶解釋要求此權限原因
                         callback.onActivityResult(EXPLAINED)
                     }
 
@@ -70,8 +70,8 @@ class PermissionsResultLauncher(caller: ActivityResultCaller) {
     }
 
     companion object {
-        const val GRANTED = 0 // 允許
-        const val DENIED = 1 // 拒絕
-        const val EXPLAINED = 2 // 拒絕且不再詢問
+        const val GRANTED = 1000 // 允許
+        const val DENIED = 2000 // 拒絕
+        const val EXPLAINED = 3000 // 拒絕且不再詢問
     }
 }

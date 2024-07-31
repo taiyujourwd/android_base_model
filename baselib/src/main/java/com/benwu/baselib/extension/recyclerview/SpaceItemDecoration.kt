@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 class SpaceItemDecoration(
     private val spacing: Int,
     private val orientation: Int = RecyclerView.VERTICAL,
-    private val spanCount: Int = 0
+    @androidx.annotation.IntRange(from = 0) private val spanCount: Int = 0
 ) : RecyclerView.ItemDecoration() {
 
     override fun getItemOffsets(
@@ -17,7 +17,7 @@ class SpaceItemDecoration(
         parent: RecyclerView,
         state: RecyclerView.State
     ) {
-        if (spacing <= 0) return
+        if (spacing == 0) return
 
         val manager = parent.layoutManager
 

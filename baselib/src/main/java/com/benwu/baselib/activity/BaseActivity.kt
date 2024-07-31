@@ -12,28 +12,20 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
-import com.benwu.baselib.R
 import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.extension.getIntentWithSingleTop
-import com.benwu.baselib.extension.isNullOrEmpty
 import com.benwu.baselib.extension.openActivity
-import com.benwu.baselib.extension.toast
 import com.benwu.baselib.utils.IUiInit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
 
-    protected val loadingDialog by lazy {
-        LoadingDialog(mActivity)
-    }
+    val loadingDialog by lazy { LoadingDialog(mActivity) }
 
-    private lateinit var mApplication: BaseApplication
-
+    private lateinit var _mApplication: BaseApplication
     private lateinit var _binding: V
-
-    private var backPressedTime = 0L // 按返回時間
 
     override val mActivity get() = this
 
@@ -42,11 +34,11 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mApplication = application as BaseApplication
+        _mApplication = application as BaseApplication
         setEnableEdgeToEdge()
 
         // 解決當使用者撤銷權限 app重啟不會回首頁
-        if (mApplication.isStartWithHome()) { // app重啟畫面 == 首頁
+        if (_mApplication.isStartWithHome()) { // app重啟畫面 == 首頁
             _binding = bindViewBinding(layoutInflater).also { setContentView(it.root) }
 
             ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -66,7 +58,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
 
             setOnClickListeners(binding.root)
         } else { // app重啟畫面 != 首頁
-            openActivity(mApplication.getHomeActivity())
+            openActivity(mActivity, _mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
         }
     }
@@ -82,21 +74,10 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
     }
 
     protected open fun setEnableEdgeToEdge() {
-        val statusBarStyle = mApplication.getStatusBarStyle()
-        val navigationBarStyle = mApplication.getNavigationBarStyle()
-
-        if (!isNullOrEmpty(statusBarStyle, navigationBarStyle)) {
-            enableEdgeToEdge(
-                statusBarStyle = statusBarStyle!!,
-                navigationBarStyle = navigationBarStyle!!
-            )
-        } else if (!isNullOrEmpty(statusBarStyle)) {
-            enableEdgeToEdge(statusBarStyle = statusBarStyle!!)
-        } else if (!isNullOrEmpty(navigationBarStyle)) {
-            enableEdgeToEdge(navigationBarStyle = navigationBarStyle!!)
-        } else {
-            enableEdgeToEdge()
-        }
+        enableEdgeToEdge(
+            statusBarStyle = _mApplication.getStatusBarStyle(),
+            navigationBarStyle = _mApplication.getNavigationBarStyle()
+        )
     }
 
     protected open fun setViewPadding(v: View, windowInsets: WindowInsetsCompat) {
@@ -107,7 +88,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
     protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                scope.invoke(this)
+                scope(this)
             }
         }
     }
@@ -119,20 +100,8 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
      * @param resultCode 回傳代碼
      */
     protected fun finishActivityForResult(resultCode: Int, bundle: Bundle? = null) {
-        setResult(resultCode, getIntentWithSingleTop(bundle = bundle))
+        setResult(resultCode, getIntentWithSingleTop(mActivity, bundle = bundle))
         finish()
-    }
-
-    /**
-     * 退出app
-     */
-    protected fun exitApp() {
-        if (System.currentTimeMillis() - backPressedTime >= 2000) { // 再按一次退出
-            getString(R.string.exit_app).toast(mActivity).show()
-            backPressedTime = System.currentTimeMillis()
-        } else {
-            ActivityCompat.finishAffinity(mActivity)
-        }
     }
 
     /**

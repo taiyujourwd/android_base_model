@@ -4,21 +4,21 @@ import android.content.Context
 import android.text.TextUtils
 import android.util.AttributeSet
 import com.benwu.baselib.R
-import com.benwu.baselib.extension.shapeable.ShapeableTextView
+import com.google.android.material.textview.MaterialTextView
 
 class ConcatTextView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-) : ShapeableTextView(context, attrs, defStyleAttr) {
+) : MaterialTextView(context, attrs, defStyleAttr) {
 
     init {
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.ConcatTextView)
 
         text = TextUtils.concat(
-            attributes.getString(R.styleable.ConcatTextView_startText) ?: "",
+            attributes.getString(R.styleable.ConcatTextView_prefixText) ?: "",
             text,
-            attributes.getString(R.styleable.ConcatTextView_endText) ?: ""
+            attributes.getString(R.styleable.ConcatTextView_suffixText) ?: ""
         )
 
         attributes.recycle()

@@ -1,5 +1,3 @@
-@file:Suppress("UNCHECKED_CAST")
-
 package com.benwu.baselib.extension
 
 import android.Manifest
@@ -11,10 +9,13 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Matrix
+import android.graphics.drawable.Drawable
 import android.location.Geocoder
 import android.location.Location
 import android.location.LocationManager
@@ -35,9 +36,12 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.annotation.AttrRes
+import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
+import androidx.annotation.StyleRes
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationChannelCompat
@@ -58,6 +62,8 @@ import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.activity.WebViewActivity
 import com.benwu.baselib.adapter.FragmentVpAdapter
 import com.benwu.baselib.api.ApiState
+import com.benwu.baselib.dialog_fragment.BaseBottomSheetDialogFragment
+import com.benwu.baselib.dialog_fragment.BaseDialogFragment
 import com.benwu.baselib.extension.recyclerview.BaseGridLayoutManager
 import com.benwu.baselib.extension.recyclerview.BaseLinearLayoutManager
 import com.benwu.baselib.extension.recyclerview.SpaceItemDecoration
@@ -66,6 +72,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.shape.MaterialShapeDrawable
+import com.google.android.material.shape.ShapeAppearanceModel
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -74,7 +82,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.io.InputStream
 import java.net.URL
 import java.nio.file.Files
@@ -82,6 +89,42 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.Stack
+
+//region view
+/**
+ * 創建MaterialShapeDrawable
+ *
+ * @param shapeAppearance 形狀
+ * @param shapeAppearanceOverlay 覆蓋形狀
+ * @param fillColor 填色
+ * @param strokeWidth 框寬度
+ * @param strokeColor 框顏色
+ * @return MaterialShapeDrawable
+ */
+fun createMaterialShapeDrawable(
+    context: Context,
+    @StyleRes shapeAppearance: Int = com.google.android.material.R.style.ShapeAppearance_Material3_Corner_None,
+    @StyleRes shapeAppearanceOverlay: Int = 0,
+    @ColorInt fillColor: Int = Color.TRANSPARENT,
+    strokeWidth: Float = 0f,
+    @ColorInt strokeColor: Int = Color.TRANSPARENT
+) = MaterialShapeDrawable(
+    ShapeAppearanceModel.builder(context, shapeAppearance, shapeAppearanceOverlay).build()
+).also {
+    it.fillColor = ColorStateList.valueOf(fillColor)
+    it.setStroke(strokeWidth.dp, strokeColor)
+}
+
+/**
+ * 設置可裁剪背景
+ *
+ * @param drawable 背景
+ */
+fun View.setClipBackground(drawable: Drawable?) {
+    background = drawable
+    clipToOutline = true
+}
+//endregion
 
 //region bar
 /**
@@ -93,12 +136,11 @@ import java.util.Stack
 fun MaterialToolbar.init(
     title: String? = null,
     @MenuRes menuRes: Int = 0,
-    onNavigationClick: (() -> Unit)? = null
+    action: (() -> Unit)? = null
 ) = also { toolbar ->
     toolbar.title = title
     toolbar.initMenu(menuRes)
-    if (isNullOrEmpty(onNavigationClick)) return@also
-    toolbar.setNavigationOnClickListener { onNavigationClick?.invoke() }
+    toolbar.setNavigationOnClickListener { action?.invoke() }
 }
 
 /**
@@ -133,14 +175,7 @@ fun MaterialToolbar.initMenu(@MenuRes menuRes: Int) = also {
  * @param newInputFilter 輸入限制
  */
 fun TextInputEditText.addFilter(newInputFilter: InputFilter) {
-    val mFilters = arrayOfNulls<InputFilter>(filters.size + 1)
-
-    filters.forEachIndexed<InputFilter?> { i: Int, inputFilter: InputFilter? ->
-        if (!isNullOrEmpty(inputFilter)) mFilters[i] = inputFilter
-    }
-
-    mFilters[filters.size] = newInputFilter
-    filters = mFilters
+    filters = filters.toMutableList().also { it.add(newInputFilter) }.toTypedArray()
 }
 
 /**
@@ -156,7 +191,7 @@ fun Context.hideKeyboard(view: View?) {
 /**
  * 更新項目
  */
-fun <T, V : ViewBinding> ListAdapter<T, ViewHolder<V>>.updateList(update: (ArrayList<T>) -> Unit) {
+fun <T> ListAdapter<T, ViewHolder>.updateList(update: (ArrayList<T>) -> Unit) {
     submitList(ArrayList(currentList).also { update(it) })
 }
 //endregion
@@ -194,7 +229,7 @@ private fun RecyclerView.init(
  */
 fun RecyclerView.init(
     adapter: RecyclerView.Adapter<*>,
-    spacing: Float = 0f,
+    @androidx.annotation.FloatRange(from = 0.0) spacing: Float = 0f,
     @RecyclerView.Orientation orientation: Int = RecyclerView.VERTICAL
 ) = init(BaseLinearLayoutManager(context, orientation), adapter, spacing, orientation)
 
@@ -209,7 +244,7 @@ fun RecyclerView.init(
 fun RecyclerView.init(
     @androidx.annotation.IntRange(from = 2) spanCount: Int,
     adapter: RecyclerView.Adapter<*>,
-    spacing: Float = 0f,
+    @androidx.annotation.FloatRange(from = 0.0) spacing: Float = 0f,
     @RecyclerView.Orientation orientation: Int = RecyclerView.VERTICAL
 ) = init(
     BaseGridLayoutManager(context, spanCount, orientation), adapter, spacing, orientation, spanCount
@@ -430,22 +465,6 @@ fun <T> MutableList<T>.refresh(dataList: List<T>) {
 }
 
 /**
- * 關鍵字查詢
- *
- * @param keyword 關鍵字
- * @param ignoreCase 是否忽略大小寫
- * @param fields 搜尋欄位
- * @return 關鍵字查詢(dataList)
- */
-fun <T> Iterable<T>.search(
-    keyword: String?,
-    ignoreCase: Boolean = true,
-    fields: (T) -> Iterable<String?>
-) = filter { data ->
-    fields(data).any { it?.contains(keyword ?: "", ignoreCase) ?: false }
-}
-
-/**
  * 依據
  *
  * @return 依據(dataList)
@@ -500,27 +519,27 @@ fun Long.formatString(pattern: String) = Date(this).formatString(pattern)
 //region log
 val IS_DEBUG = BuildConfig.DEBUG
 
-fun String.v(tag: String) {
-    if (IS_DEBUG) Log.v(tag, this)
+fun debugPrintV(tag: String, message: String) {
+    if (IS_DEBUG) Log.v(tag, message)
 }
 
-fun String.d(tag: String) {
-    if (IS_DEBUG) Log.d(tag, this)
+fun debugPrintD(tag: String, message: String) {
+    if (IS_DEBUG) Log.d(tag, message)
 }
 
-fun String.i(tag: String) {
-    if (IS_DEBUG) Log.i(tag, this)
+fun debugPrintI(tag: String, message: String) {
+    if (IS_DEBUG) Log.i(tag, message)
 }
 
-fun String.w(tag: String) {
-    if (IS_DEBUG) Log.w(tag, this)
+fun debugPrintW(tag: String, message: String) {
+    if (IS_DEBUG) Log.w(tag, message)
 }
 
-fun String.e(tag: String) {
-    if (IS_DEBUG) Log.e(tag, this)
+fun debugPrintE(tag: String, message: String) {
+    if (IS_DEBUG) Log.e(tag, message)
 }
 
-fun Throwable.print() {
+fun Throwable.debugPrint() {
     if (IS_DEBUG) printStackTrace()
 }
 //endregion
@@ -529,113 +548,197 @@ fun Throwable.print() {
 /**
  * toast
  *
+ * @param message 訊息
  * @param interval 顯示多長的時間
- * @return toast
  */
-fun String.toast(context: Context, interval: Int = Toast.LENGTH_SHORT): Toast =
-    Toast.makeText(context, this, interval)
+fun showToast(context: Context, message: String, interval: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(context, message, interval).show()
+}
 
 /**
  * snackbar
  *
+ * @param message 訊息
  * @param interval 顯示多長的時間
- * @return snackbar
+ * @param actionName 按鈕名稱
  */
-fun String.snackbar(view: View, interval: Int = Snackbar.LENGTH_SHORT): Snackbar =
-    Snackbar.make(view, this, interval)
+fun showSnackbar(
+    view: View,
+    message: String,
+    actionName: String? = null,
+    interval: Int = Toast.LENGTH_SHORT,
+    action: ((View) -> Unit)? = null
+) {
+    Snackbar.make(view, message, interval)
+        .setAction(actionName) { action?.invoke(it) }
+        .show()
+}
 
 /**
- * 訊息
+ * 提示視窗
  *
+ * @param message 訊息
  * @param title 標題
  * @param isCancelable 是否可點擊外部取消
- * @return dialog
  */
-fun String.message(
+fun showNotice(
     context: Context,
+    message: String,
+    title: String = context.getString(R.string.notice),
+    positive: String = context.getString(R.string.sure),
     negative: String = "",
     neutral: String = "",
-    positive: String = context.getString(R.string.sure),
-    title: String = context.getString(R.string.notice),
     isCancelable: Boolean = false,
-    onClick: ((action: Int) -> Unit)? = null
-) = MaterialAlertDialogBuilder(context).also {
-    it.setTitle(title).setMessage(this).setCancelable(isCancelable)
-    it.setPositiveButton(positive) { _, which -> onClick?.invoke(which) }
-    if (!isNullOrEmpty(negative)) it.setNegativeButton(negative) { _, which -> onClick?.invoke(which) }
-    if (!isNullOrEmpty(neutral)) it.setNeutralButton(neutral) { _, which -> onClick?.invoke(which) }
+    action: ((action: Int) -> Unit)? = null
+) {
+    val dialog = MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setMessage(message)
+        .setCancelable(isCancelable)
+        .setPositiveButton(positive) { _, which -> action?.invoke(which) }
+
+    if (!isNullOrEmpty(negative)) {
+        dialog.setNegativeButton(negative) { _, which -> action?.invoke(which) }
+    }
+
+    if (!isNullOrEmpty(neutral)) {
+        dialog.setNeutralButton(neutral) { _, which -> action?.invoke(which) }
+    }
+
+    dialog.show()
 }
 
 /**
  * 選擇器
  *
+ * @param items 項目
  * @param title 標題
- * @return dialog
  */
-fun Array<String>.picker(
+fun showPicker(
     context: Context,
+    items: Array<String>,
     title: String,
-    onSelect: (position: Int, data: String) -> Unit
-) = MaterialAlertDialogBuilder(context).setTitle(title)
-    .setItems(this) { _, which -> onSelect(which, get(which)) }
+    select: (position: Int, data: String) -> Unit
+) {
+    MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setItems(items) { _, which -> select(which, items[which]) }
+        .show()
+}
 
 /**
  * 單選
  *
+ * @param items 項目
  * @param title 標題
- * @param selectItem 預設選取
- * @return dialog
+ * @param selectItem 預設
  */
-fun Array<String>.singleChoice(
+fun showSingleChoice(
     context: Context,
+    items: Array<String>,
     title: String,
     selectItem: Int = 0,
-    onSelect: (position: Int, data: String) -> Unit
-) = MaterialAlertDialogBuilder(context).also {
+    select: (position: Int, data: String) -> Unit
+) {
     var position = 0
 
-    it.setTitle(title).setNegativeButton(R.string.cancel) { _, _ -> }
-        .setPositiveButton(R.string.sure) { _, _ -> onSelect(position, get(position)) }
-        .setSingleChoiceItems(this, selectItem) { _, which -> position = which }
+    MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setNegativeButton(R.string.cancel) { _, _ -> }
+        .setPositiveButton(R.string.sure) { _, _ -> select(position, items[position]) }
+        .setSingleChoiceItems(items, selectItem) { _, which -> position = which }
+        .show()
 }
 
 /**
  * 複選
  *
+ * @param items 項目
  * @param title 標題
- * @param selectItems 預設選取
- * @return dialog
+ * @param selectItems 預設
  */
-fun Array<String>.multiChoice(
+fun showMultiChoice(
     context: Context,
+    items: Array<String>,
     title: String,
     selectItems: BooleanArray,
-    onSelect: (selectItems: BooleanArray) -> Unit
-) = MaterialAlertDialogBuilder(context).setTitle(title)
-    .setNegativeButton(R.string.cancel) { _, _ -> }
-    .setPositiveButton(R.string.sure) { _, _ -> onSelect(selectItems) }
-    .setMultiChoiceItems(this, selectItems) { _, which, checked -> selectItems[which] = checked }
+    select: (selectItems: BooleanArray) -> Unit
+) {
+    MaterialAlertDialogBuilder(context)
+        .setTitle(title)
+        .setNegativeButton(R.string.cancel) { _, _ -> }
+        .setPositiveButton(R.string.sure) { _, _ -> select(selectItems) }
+        .setMultiChoiceItems(items, selectItems) { _, which, checked ->
+            selectItems[which] = checked
+        }.show()
+}
+
+/**
+ * 客製化視窗
+ */
+fun <T, V : ViewBinding> showDialogFragment(
+    dialogFragment: BaseDialogFragment<T, V>,
+    fragmentManager: FragmentManager,
+    tag: String? = null,
+    action: ((AppCompatDialogFragment, T?) -> Unit)? = null
+) {
+    dialogFragment
+        .setOnDialogResultListener { dialog, data -> action?.invoke(dialog, data) }
+        .show(fragmentManager, tag)
+}
+
+/**
+ * 客製化底部視窗
+ */
+fun <T, V : ViewBinding> showBottomSheetDialogFragment(
+    dialogFragment: BaseBottomSheetDialogFragment<T, V>,
+    fragmentManager: FragmentManager,
+    tag: String? = null,
+    action: ((AppCompatDialogFragment, T?) -> Unit)? = null
+) {
+    dialogFragment
+        .setOnDialogResultListener { dialog, data -> action?.invoke(dialog, data) }
+        .show(fragmentManager, tag)
+}
 //endregion
 
 //region api
 /**
  * 處理api例外狀況
  */
-suspend fun <T> safeApiCall(apiCall: suspend () -> T): ApiState<T> {
-    return withContext(Dispatchers.IO) {
-        try {
-            ApiState.Success(apiCall())
-        } catch (throwable: Throwable) {
-            ApiState.Failure(throwable)
-        }
+suspend fun <T> safeApiCall(apiCall: suspend () -> T) = withContext(Dispatchers.IO) {
+    try {
+        ApiState.Success(apiCall())
+    } catch (throwable: Throwable) {
+        ApiState.Failure(throwable)
     }
 }
 //endregion
 
 //region fragment
-fun <T> FragmentManager.findFragmentByTagT(tag: String?) = findFragmentByTag(tag) as T
+/**
+ * 使用id找對應的fragment
+ *
+ * @return fragment
+ */
+inline fun <reified T> FragmentManager.findFragmentByIdT(id: Int): T? =
+    when (val fragment = findFragmentById(id)) {
+        is T -> fragment
 
-fun <T> FragmentManager.findFragmentByIdT(id: Int) = findFragmentById(id) as T
+        else -> null
+    }
+
+/**
+ * 使用tag找對應的fragment
+ *
+ * @return fragment
+ */
+inline fun <reified T> FragmentManager.findFragmentByTagT(tag: String?): T? =
+    when (val fragment = findFragmentByTag(tag)) {
+        is T -> fragment
+
+        else -> null
+    }
 //endregion
 
 //region permission
@@ -644,33 +747,36 @@ fun <T> FragmentManager.findFragmentByIdT(id: Int) = findFragmentById(id) as T
  *
  * @return 是/否
  */
-fun Context.isPermissionsGranted(vararg permissions: String) = permissions.none {
-    ContextCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_DENIED
+fun isPermissionsGranted(context: Context, vararg permissions: String) = permissions.none {
+    ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_DENIED
 }
 
 /**
- * 是否該向用戶解釋要求此權限原因
+ * 是否該向用戶解釋要求此權限的原因
  *
  * @return 是/否
  */
-fun AppCompatActivity.isPermissionRationale(vararg permissions: String) = permissions.any {
-    ActivityCompat.shouldShowRequestPermissionRationale(this, it)
+fun isPermissionRationale(
+    activity: AppCompatActivity,
+    vararg permissions: String
+) = permissions.any {
+    ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
 }
 
 /**
- * 權限遭拒訊息
- *
- * @return 權限遭拒訊息
+ * 權限遭拒提示視窗
  */
-fun Context.permissionDeniedMsg(permissionsName: String) =
-    getString(R.string.permission_denied, permissionsName).message(
-        this,
-        getString(R.string.cancel),
-        positive = getString(R.string.setting)
+fun showPermissionDeniedNotice(context: Context, permissionName: String) {
+    showNotice(
+        context,
+        context.getString(R.string.permission_denied, permissionName),
+        positive = context.getString(R.string.setting),
+        negative = context.getString(R.string.cancel)
     ) {
-        if (it != DialogInterface.BUTTON_POSITIVE) return@message
-        openSetting()
+        if (it != DialogInterface.BUTTON_POSITIVE) return@showNotice
+        openSetting(context)
     }
+}
 //endregion
 
 //region location
@@ -692,25 +798,30 @@ fun Location.distanceTo(lat: Double, lon: Double) = FloatArray(1).also {
  * @param lon 經度
  * @return 縣市
  */
-fun Context.locationToCity(lat: Double, lon: Double, onSuccess: (area: String) -> Unit) {
-    val geocoder = Geocoder(this, Locale.getDefault())
+fun locationToCity(
+    context: Context,
+    lat: Double,
+    lon: Double,
+    success: (city: String) -> Unit
+) {
+    val geocoder = Geocoder(context, Locale.getDefault())
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         geocoder.getFromLocation(lat, lon, 1) {
             it.getOrNull(0)?.also { address ->
                 if (isNullOrEmpty(address.adminArea)) {
-                    onSuccess(address.subAdminArea)
+                    success(address.subAdminArea)
                 } else {
-                    onSuccess(address.adminArea)
+                    success(address.adminArea)
                 }
             }
         }
     } else {
         geocoder.getFromLocation(lat, lon, 1)?.getOrNull(0)?.also {
             if (isNullOrEmpty(it.adminArea)) {
-                onSuccess(it.subAdminArea)
+                success(it.subAdminArea)
             } else {
-                onSuccess(it.adminArea)
+                success(it.adminArea)
             }
         }
     }
@@ -723,25 +834,30 @@ fun Context.locationToCity(lat: Double, lon: Double, onSuccess: (area: String) -
  * @param lon 經度
  * @return 地區
  */
-fun Context.locationToArea(lat: Double, lon: Double, onSuccess: (area: String) -> Unit) {
-    val geocoder = Geocoder(this, Locale.getDefault())
+fun locationToArea(
+    context: Context,
+    lat: Double,
+    lon: Double,
+    success: (area: String) -> Unit
+) {
+    val geocoder = Geocoder(context, Locale.getDefault())
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         geocoder.getFromLocation(lat, lon, 1) {
             it.getOrNull(0)?.also { address ->
                 if (isNullOrEmpty(address.locality)) {
-                    onSuccess(address.subLocality)
+                    success(address.subLocality)
                 } else {
-                    onSuccess(address.locality)
+                    success(address.locality)
                 }
             }
         }
     } else {
         geocoder.getFromLocation(lat, lon, 1)?.getOrNull(0)?.also {
             if (isNullOrEmpty(it.locality)) {
-                onSuccess(it.subLocality)
+                success(it.subLocality)
             } else {
-                onSuccess(it.locality)
+                success(it.locality)
             }
         }
     }
@@ -750,26 +866,24 @@ fun Context.locationToArea(lat: Double, lon: Double, onSuccess: (area: String) -
 /**
  * GPS是否開啟
  *
- * @return 是否開啟
+ * @return 是/否
  */
-fun Context.isGpsOpen(): Boolean {
-    val manager = getSystemService(LocationManager::class.java)
+fun isGpsOpen(context: Context): Boolean {
+    val manager = context.getSystemService(LocationManager::class.java)
 
-    val isGpsOpen =
-        manager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    val isGpsOpen = manager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+            manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
     if (!isGpsOpen) {
-        getString(R.string.open_gps).message(
-            this,
-            getString(R.string.cancel),
-            positive = getString(R.string.setting)
-        ) { type ->
-            if (type != DialogInterface.BUTTON_POSITIVE) return@message
-            startActivity(getIntentWithSingleTop().also {
-                it.action = Settings.ACTION_LOCATION_SOURCE_SETTINGS
-            })
-        }.show()
+        showNotice(
+            context,
+            context.getString(R.string.open_gps),
+            positive = context.getString(R.string.setting),
+            negative = context.getString(R.string.cancel)
+        ) { which ->
+            if (which != DialogInterface.BUTTON_POSITIVE) return@showNotice
+            openActivity(context) { it.action = Settings.ACTION_LOCATION_SOURCE_SETTINGS }
+        }
     }
 
     return isGpsOpen
@@ -781,6 +895,7 @@ fun Context.isGpsOpen(): Boolean {
  * 創建file
  *
  * @param fileName 檔案名稱
+ * @return File
  */
 fun File.createFile(fileName: String): File {
     if (!exists()) mkdir()
@@ -791,11 +906,16 @@ fun File.createFile(fileName: String): File {
  * 創建file
  *
  * @param fileName 檔案名稱
+ * @return File
  */
 fun File.createFile(fileName: String, input: InputStream): File {
     if (!exists()) mkdir()
     val file = File(this, fileName)
-    input.buffered().copyTo(file.outputStream())
+    val fos = file.outputStream()
+    input.buffered().copyTo(fos)
+
+    fos.flush()
+    fos.close()
     input.close()
 
     return file
@@ -805,14 +925,16 @@ fun File.createFile(fileName: String, input: InputStream): File {
  * bitmap轉file
  *
  * @param fileName 檔案名稱
- * @return file
+ * @return File
  */
 fun File.fromBitmap(fileName: String, bitmap: Bitmap): File {
     val file = createFile(fileName)
-    val fos = FileOutputStream(file)
+    val fos = file.outputStream()
     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+
     fos.flush()
     fos.close()
+
     return file
 }
 
@@ -822,7 +944,9 @@ fun File.fromBitmap(fileName: String, bitmap: Bitmap): File {
 fun File.deleteDir() {
     if (!exists()) return
 
-    Files.walk(toPath()).sorted(Comparator.reverseOrder()).map { it.toFile() }
+    Files.walk(toPath())
+        .sorted(Comparator.reverseOrder())
+        .map { it.toFile() }
         .forEach { it.delete() }
 }
 
@@ -867,8 +991,9 @@ suspend fun File.correctImageRotation() = withContext(Dispatchers.IO) {
             true
         )
 
-        val fos = FileOutputStream(file)
+        val fos = file.outputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+
         fos.flush()
         fos.close()
     }
@@ -878,16 +1003,17 @@ suspend fun File.correctImageRotation() = withContext(Dispatchers.IO) {
  * 檔案下載
  *
  * @param path 路徑
+ * @return File
  */
-fun File.download(path: String): File {
+fun File.download(path: String) = runCatching {
     val url = URL(path)
     url.openConnection().connect()
 
-    return createFile(
+    createFile(
         URLUtil.guessFileName(path, null, null),
         BufferedInputStream(url.openStream())
     )
-}
+}.getOrNull()
 
 /**
  * 檔案下載
@@ -895,38 +1021,44 @@ fun File.download(path: String): File {
  * @param url 路徑
  * @param fileName 檔案名稱
  */
-fun Context.download(
+fun download(
+    context: Context,
     url: String,
     fileName: String,
     init: ((DownloadManager.Request) -> Unit)? = null
 ) {
-    val request = DownloadManager.Request(Uri.parse(url)).setTitle(fileName)
-        .setDescription(getString(R.string.downloading))
+    val request = DownloadManager.Request(Uri.parse(url))
+        .setTitle(fileName)
+        .setDescription(context.getString(R.string.downloading))
         .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
         .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 
     init?.invoke(request)
-    getSystemService(DownloadManager::class.java).enqueue(request)
-    getString(R.string.download_notice).toast(this).show()
+    context.getSystemService(DownloadManager::class.java).enqueue(request)
+    showToast(context, context.getString(R.string.download_notice))
 }
 
 /**
- * 檔案下載(dialog)
+ * 檔案下載提示視窗
  *
  * @param url 路徑
  * @param fileName 檔案名稱
  */
-fun Context.downloadDialog(
+fun downloadNotice(
+    context: Context,
     url: String,
     fileName: String,
     init: ((DownloadManager.Request) -> Unit)? = null
-) = getString(R.string.download_msg, fileName).message(
-    this,
-    getString(R.string.cancel),
-    positive = getString(R.string.download)
 ) {
-    if (it != DialogInterface.BUTTON_POSITIVE) return@message
-    download(url, fileName, init)
+    showNotice(
+        context,
+        context.getString(R.string.download_msg, fileName),
+        positive = context.getString(R.string.download),
+        negative = context.getString(R.string.cancel)
+    ) {
+        if (it != DialogInterface.BUTTON_POSITIVE) return@showNotice
+        download(context, url, fileName, init)
+    }
 }
 //endregion
 
@@ -944,14 +1076,15 @@ const val NOTIFICATION_ID = 65536
  * @param badge 數量
  * @return 推播
  */
-fun Context.initNotification(
+fun initNotification(
+    context: Context,
     title: String,
     content: String,
     @DrawableRes smallIconRes: Int,
     badge: Int = 0,
     intent: Intent? = null,
     init: ((builder: NotificationCompat.Builder) -> Unit)? = null
-): Notification = NotificationCompat.Builder(this, CHANNEL_ID).also {
+) = NotificationCompat.Builder(context, CHANNEL_ID).also {
     it.setContentTitle(title)
         .setContentText(content)
         .setSmallIcon(smallIconRes)
@@ -964,7 +1097,7 @@ fun Context.initNotification(
 
         it.setContentIntent(
             PendingIntent.getActivity(
-                this,
+                context,
                 0,
                 intent,
                 PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
@@ -985,7 +1118,8 @@ fun Context.initNotification(
  * @param sound 音效
  */
 @SuppressLint("MissingPermission")
-fun Context.sendNotification(
+fun sendNotification(
+    context: Context,
     title: String,
     content: String,
     @DrawableRes smallIconRes: Int,
@@ -994,7 +1128,7 @@ fun Context.sendNotification(
     sound: Uri = Settings.System.DEFAULT_NOTIFICATION_URI,
     init: ((builder: NotificationCompat.Builder) -> Unit)? = null
 ) {
-    val manager = NotificationManagerCompat.from(this)
+    val manager = NotificationManagerCompat.from(context)
 
     manager.createNotificationChannel(
         NotificationChannelCompat.Builder(CHANNEL_ID, NotificationManagerCompat.IMPORTANCE_DEFAULT)
@@ -1003,10 +1137,10 @@ fun Context.sendNotification(
             .build()
     )
 
-    if (isPermissionsGranted(Manifest.permission.POST_NOTIFICATIONS)) {
+    if (isPermissionsGranted(context, Manifest.permission.POST_NOTIFICATIONS)) {
         manager.notify(
             NOTIFICATION_ID,
-            initNotification(title, content, smallIconRes, badge, intent, init)
+            initNotification(context, title, content, smallIconRes, badge, intent, init)
         )
     }
 }
@@ -1020,9 +1154,13 @@ private const val IS_WEB_VIEW = true // 是否使用webView
  *
  * @return intent
  */
-fun Context.getIntentWithSingleTop(clazz: Class<*>? = null, bundle: Bundle? = null): Intent {
+fun getIntentWithSingleTop(
+    context: Context,
+    clazz: Class<*>? = null,
+    bundle: Bundle? = null
+): Intent {
     val intent = clazz?.let {
-        Intent(this, it).apply { flags = Intent.FLAG_ACTIVITY_SINGLE_TOP }
+        Intent(context, it).apply { flags = Intent.FLAG_ACTIVITY_SINGLE_TOP }
     } ?: Intent()
 
     bundle?.also { intent.putExtras(it) }
@@ -1033,8 +1171,15 @@ fun Context.getIntentWithSingleTop(clazz: Class<*>? = null, bundle: Bundle? = nu
 /**
  * 導去指定頁
  */
-fun Context.openActivity(clazz: Class<*>? = null, bundle: Bundle? = null) {
-    startActivity(getIntentWithSingleTop(clazz, bundle))
+fun openActivity(
+    context: Context,
+    clazz: Class<*>? = null,
+    bundle: Bundle? = null,
+    intent: ((Intent) -> Unit)? = null
+) {
+    context.startActivity(getIntentWithSingleTop(context, clazz, bundle).also {
+        intent?.invoke(it)
+    })
 }
 
 /**
@@ -1044,36 +1189,40 @@ fun Context.openActivity(clazz: Class<*>? = null, bundle: Bundle? = null) {
  * @param url 網址
  * @param isWebView 是否使用webView
  */
-fun Context.openUrl(toolbarTitle: String, url: String, isWebView: Boolean = IS_WEB_VIEW) {
+fun openUrl(context: Context, toolbarTitle: String, url: String, isWebView: Boolean = IS_WEB_VIEW) {
     if (!isWebView) { // chrome
-        startActivity(getIntentWithSingleTop().also {
+        openActivity(context) {
             it.action = Intent.ACTION_VIEW
             it.data = Uri.parse(url)
-        })
+        }
     } else { // 內嵌網頁
-        openActivity(WebViewActivity::class.java, bundleOf("title" to toolbarTitle, "data" to url))
+        openActivity(
+            context,
+            WebViewActivity::class.java,
+            bundleOf("title" to toolbarTitle, "data" to url)
+        )
     }
 }
 
 /**
  * 導去設定頁
  */
-fun Context.openSetting() {
-    startActivity(getIntentWithSingleTop().also {
+fun openSetting(context: Context) {
+    openActivity(context) {
         it.action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
-        it.data = Uri.parse("package:$packageName")
+        it.data = Uri.parse("package:${context.packageName}")
         it.addCategory(Intent.CATEGORY_DEFAULT)
-    })
+    }
 }
 
 /**
  * 撥打電話
  */
-fun Context.callPhone(tel: String) {
-    startActivity(getIntentWithSingleTop().also {
+fun callPhone(context: Context, tel: String) {
+    openActivity(context) {
         it.action = Intent.ACTION_DIAL
         it.data = Uri.parse("tel:${tel}")
-    })
+    }
 }
 
 /**
@@ -1082,25 +1231,25 @@ fun Context.callPhone(tel: String) {
  * @param lat 緯度
  * @param lon 經度
  */
-fun Context.navigationTo(lat: Double, lon: Double) {
-    startActivity(getIntentWithSingleTop().also {
+fun navigationTo(context: Context, lat: Double, lon: Double) {
+    openActivity(context) {
         it.action = Intent.ACTION_VIEW
         it.data = Uri.parse("http://maps.google.com/maps?daddr=$lat,$lon")
         it.`package` = "com.google.android.apps.maps"
-    })
+    }
 }
 
 /**
- * 搜尋位置
+ * 搜尋地點
  *
- * @param location 位置
+ * @param place 地點
  */
-fun Context.searchLocation(location: String) {
-    startActivity(getIntentWithSingleTop().also {
+fun searchPlace(context: Context, place: String) {
+    openActivity(context) {
         it.action = Intent.ACTION_VIEW
-        it.data = Uri.parse("geo:0,0?q=${location}")
+        it.data = Uri.parse("geo:0,0?q=${place}")
         it.`package` = "com.google.android.apps.maps"
-    })
+    }
 }
 //endregion
 
@@ -1119,8 +1268,8 @@ fun ByteArray.toBase64() = runCatching {
  *
  * @return attr值
  */
-fun Context.getAttrValue(@AttrRes attrRes: Int) = TypedValue().also {
-    theme.resolveAttribute(attrRes, it, true)
+fun getAttrValue(context: Context, @AttrRes attrRes: Int) = TypedValue().also {
+    context.theme.resolveAttribute(attrRes, it, true)
 }.data
 
 /**
@@ -1146,17 +1295,17 @@ val Float.sp
 /**
  * 產生28個字元的密鑰雜湊
  */
-fun String.getCertificates() {
-    val sha1s = split(':')
+fun getCertificates(sha1: String) {
+    val sha1s = sha1.split(':')
     val data = ByteArray(sha1s.size)
     sha1s.indices.forEach { data[it] = sha1s[it].toInt(16).toByte() }
-    "keyHash".e(Base64.encodeToString(data, Base64.DEFAULT))
+    debugPrintE("keyHash", data.toBase64() ?: "")
 }
 
 /**
  * 判斷是否為null/空
  *
- * @return 是否為null/空
+ * @return 是/否
  */
 fun isNullOrEmpty(vararg data: Any?): Boolean {
     data.forEach {

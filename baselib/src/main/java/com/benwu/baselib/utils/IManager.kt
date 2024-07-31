@@ -73,18 +73,14 @@ interface IAdapterInit<T, V : ViewBinding> {
      *
      * @return layout
      */
-    fun bindViewBinding(
-        inflater: LayoutInflater,
-        parent: ViewGroup,
-        viewType: Int
-    ): V
+    fun bindViewBinding(inflater: LayoutInflater, parent: ViewGroup, viewType: Int): ViewBinding
 
     /**
      * 綁定viewHolder
      *
      * @param position 資料位置
      */
-    fun bindViewHolder(holder: ViewHolder<V>, position: Int, payloads: MutableList<Any>? = null)
+    fun bindViewHolder(holder: ViewHolder, position: Int, payloads: MutableList<Any>? = null)
 
     /**
      * 綁定view
@@ -101,21 +97,21 @@ interface IAdapterInit<T, V : ViewBinding> {
     /**
      * 綁定點擊事件
      */
-    fun bindOnClickListener(holder: ViewHolder<V>) {
-        setOnClickListeners(holder, holder.binding.root)
+    fun bindOnClickListener(holder: ViewHolder, binding: V) {
+        setOnClickListeners(holder, binding.root)
     }
     //endregion
 
-    fun getPosition(holder: ViewHolder<V>) = holder.bindingAdapterPosition
+    fun getPosition(holder: ViewHolder) = holder.bindingAdapterPosition
 
-    fun getData(holder: ViewHolder<V>): T?
+    fun getData(holder: ViewHolder): T?
 
-    fun setOnItemClickListener(listener: ((View?, Int, T?) -> Unit))
+    fun setOnItemClickListener(listener: (View?, Int, T?) -> Unit)
 
     /**
      * 設置view的點擊事件
      */
-    fun setOnClickListeners(holder: ViewHolder<V>, vararg views: View) {
+    fun setOnClickListeners(holder: ViewHolder, vararg views: View) {
         views.forEach { view ->
             view.setOnClickListener {
                 onClick(it, getPosition(holder), getData(holder))
@@ -125,6 +121,10 @@ interface IAdapterInit<T, V : ViewBinding> {
 
     fun onClick(view: View?, position: Int, data: T?) {
         mContext.hideKeyboard(view)
+    }
+
+    companion object {
+        const val VIEW_TYPE_DATA_EMPTY = 999
     }
 }
 

@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="ShapeableConstraintLayout">
-        <attr name="strokeWidth" />
-        <attr name="strokeColor" />
-        <attr name="shapeAppearance" />
-        <attr name="shapeAppearanceOverlay" />
-    </declare-styleable>
-
-    <declare-styleable name="ShapeableTextView">
-        <attr name="strokeWidth" />
-        <attr name="strokeColor" />
-        <attr name="shapeAppearance" />
-        <attr name="shapeAppearanceOverlay" />
-    </declare-styleable>
-
     <declare-styleable name="ConcatTextView">
-        <attr name="startText" format="string" />
-        <attr name="endText" format="string" />
+        <attr name="prefixText" format="string" />
+        <attr name="suffixText" format="string" />
     </declare-styleable>
 </resources>

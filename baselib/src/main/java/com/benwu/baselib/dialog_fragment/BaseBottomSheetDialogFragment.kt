@@ -15,7 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
-import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -26,14 +25,10 @@ import kotlinx.coroutines.launch
 abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDialogFragment(),
     IUiInit<V>, IDialogResult<T> {
 
-    protected val loadingDialog by lazy {
-        LoadingDialog(mActivity)
-    }
+    val loadingDialog by lazy { mActivity.loadingDialog }
 
     private lateinit var _mActivity: BaseActivity<*>
-
     private lateinit var _binding: V
-
     private var _onDialogResultListener: ((AppCompatDialogFragment, T?) -> Unit)? = null
 
     protected lateinit var mDialog: Dialog
@@ -109,16 +104,14 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
     }
     //endregion
 
-    override fun setOnDialogResultListener(
-        listener: ((AppCompatDialogFragment, T?) -> Unit)
-    ) = also {
+    override fun setOnDialogResultListener(listener: (AppCompatDialogFragment, T?) -> Unit) = also {
         _onDialogResultListener = listener
     }
 
     protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {
         viewLifecycleOwner.lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                scope.invoke(this)
+                scope(this)
             }
         }
     }

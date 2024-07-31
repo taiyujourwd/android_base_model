@@ -2,6 +2,7 @@ package com.benwu.baselib.application
 
 import android.app.ActivityManager
 import android.app.Application
+import android.graphics.Color
 import androidx.activity.SystemBarStyle
 import com.benwu.baselib.extension.isNullOrEmpty
 
@@ -38,14 +39,14 @@ abstract class BaseApplication : Application() {
      *
      * @return 狀態欄樣式
      */
-    open fun getStatusBarStyle(): SystemBarStyle? = null
+    open fun getStatusBarStyle() = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
 
     /**
      * 取得導覽列樣式
      *
      * @return 導覽列樣式
      */
-    open fun getNavigationBarStyle(): SystemBarStyle? = null
+    open fun getNavigationBarStyle() = SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT)
 
     /**
      * 解決當使用者撤銷權限 app重啟不會回首頁

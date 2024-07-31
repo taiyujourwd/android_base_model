@@ -16,7 +16,7 @@ import com.benwu.androidbase.extension.dataStore
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
-import com.benwu.baselib.extension.snackbar
+import com.benwu.baselib.extension.showSnackbar
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -75,7 +75,7 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = it.isLoading
                     loadingDialog.toggle(!binding.srl.isRefreshing && it.isLoading)
                     if (!it.isError) return@collectLatest
-                    getString(com.benwu.baselib.R.string.api_error).snackbar(binding.root).show()
+                    showSnackbar(binding.root, getString(com.benwu.baselib.R.string.api_error))
                 }
             }
         }
