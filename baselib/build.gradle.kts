@@ -47,6 +47,7 @@ dependencies {
 
     api(libs.androidx.activity.ktx)
     api(libs.androidx.fragment.ktx)
+    api(libs.androidx.constraintlayout)
     api(libs.androidx.recyclerview)
     api(libs.androidx.viewpager2)
     api(libs.androidx.swiperefreshlayout)
