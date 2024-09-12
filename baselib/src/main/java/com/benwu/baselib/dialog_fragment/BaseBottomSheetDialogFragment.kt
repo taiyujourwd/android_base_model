@@ -10,17 +10,12 @@ import android.view.Window
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.FragmentManager
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDialogFragment(),
     IUiInit<V>, IDialogResult<T> {
@@ -106,14 +101,6 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
 
     override fun setOnDialogResultListener(listener: (AppCompatDialogFragment, T?) -> Unit) = also {
         _onDialogResultListener = listener
-    }
-
-    protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                scope(this)
-            }
-        }
     }
 
     /**

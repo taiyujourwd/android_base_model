@@ -8,17 +8,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.extension.getIntentWithSingleTop
 import com.benwu.baselib.extension.openActivity
 import com.benwu.baselib.utils.IUiInit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
 
@@ -83,14 +78,6 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
     protected open fun setViewPadding(v: View, windowInsets: WindowInsetsCompat) {
         val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
         v.setPadding(insets.left, insets.top, insets.right, insets.bottom)
-    }
-
-    protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                scope(this)
-            }
-        }
     }
 
     /**

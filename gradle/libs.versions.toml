@@ -1,6 +1,6 @@
 [versions]
 #android
-agp = "8.5.1"
+agp = "8.6.0"
 
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -8,8 +8,8 @@ junit = "4.13.2"
 junitTest = "1.2.1"
 espressoCore = "3.6.1"
 
-activity = "1.9.1"
-fragment = "1.8.2"
+activity = "1.9.2"
+fragment = "1.8.3"
 constraintlayout = "2.1.4"
 recyclerview = "1.3.2"
 swiperefreshlayout = "1.1.0"
@@ -26,13 +26,13 @@ hilt = "2.51.1"
 room = "2.6.1"
 
 #lifecycle
-lifecycle = "2.8.4"
+lifecycle = "2.8.5"
 
 #dataStore
 datastorePreferences = "1.1.1"
 
 #paging
-paging = "3.3.1"
+paging = "3.3.2"
 
 #retrofit
 retrofit = "2.11.0"
@@ -51,7 +51,7 @@ glide = "4.16.0"
 lottie = "6.4.1"
 
 #navigation
-nav = "2.7.7"
+nav = "2.8.0"
 
 #適配
 androidAutoSize = "v1.2.1"

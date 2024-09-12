@@ -4,6 +4,7 @@ import android.graphics.Rect
 import android.view.View
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.benwu.baselib.extension.getOrDefault
 
 class SpaceItemDecoration(
     private val spacing: Int,
@@ -35,7 +36,7 @@ class SpaceItemDecoration(
             var position = 0
             var spanSize = 0
 
-            for (i in 0 until (parent.adapter?.itemCount ?: 0)) {
+            for (i in 0 until parent.adapter?.itemCount.getOrDefault(0)) {
                 position += 1
                 spanSize += (parent.layoutManager as GridLayoutManager).spanSizeLookup.getSpanSize(i)
                 if (spanSize >= spanCount) break

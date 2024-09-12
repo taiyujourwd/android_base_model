@@ -16,6 +16,7 @@ import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.adapter.FooterAdapter
 import com.benwu.baselib.extension.init
 import com.benwu.baselib.extension.showBottomSheetDialogFragment
+import com.benwu.baselib.extension.viewScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -61,7 +62,12 @@ class RepoPagingDemoActivity : BaseActivity<IncludeRepoBinding>(),
                     val isLoading = loadState.refresh is LoadState.Loading
                     val isError = loadState.refresh is LoadState.Error
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = isLoading
-                    binding.loading.toggle(isLoading && !binding.srl.isRefreshing, isError)
+
+                    binding.loading.toggle(
+                        isLoading && !binding.srl.isRefreshing,
+                        isError,
+                        retry = this@RepoPagingDemoActivity::onRefresh
+                    )
                 }
             }
         }

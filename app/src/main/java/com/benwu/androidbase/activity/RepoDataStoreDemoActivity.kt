@@ -17,6 +17,7 @@ import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
 import com.benwu.baselib.extension.showBottomSheetDialogFragment
+import com.benwu.baselib.extension.viewScope
 import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -44,7 +45,6 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
         initRepoRv()
 
         binding.srl.setOnRefreshListener(this)
-        binding.loading.retry { getData() }
     }
 
     override fun getData() {
@@ -74,7 +74,12 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
             launch {
                 viewModel.baseUiState.collectLatest {
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = it.isLoading
-                    binding.loading.toggle(it.isLoading && !binding.srl.isRefreshing, it.isError)
+
+                    binding.loading.toggle(
+                        it.isLoading && !binding.srl.isRefreshing,
+                        it.isError,
+                        retry = this@RepoDataStoreDemoActivity::onRefresh
+                    )
                 }
             }
         }

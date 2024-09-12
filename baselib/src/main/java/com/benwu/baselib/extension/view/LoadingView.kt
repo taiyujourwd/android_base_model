@@ -8,7 +8,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import com.benwu.baselib.R
 import com.benwu.baselib.databinding.IncludeLoadingBinding
+import com.benwu.baselib.extension.getOrDefault
 import com.benwu.baselib.extension.hideKeyboard
+import com.benwu.baselib.extension.isNullOrEmpty
 
 class LoadingView @JvmOverloads constructor(
     private val context: Context,
@@ -20,19 +22,16 @@ class LoadingView @JvmOverloads constructor(
     private val binding: IncludeLoadingBinding =
         IncludeLoadingBinding.inflate(LayoutInflater.from(context), this)
 
-    private var retry: (() -> Unit)? = null
+    private var _retry: (() -> Unit)? = null
 
     init {
         val attributes = context.obtainStyledAttributes(attrs, R.styleable.LoadingView)
 
-        setMessage(
-            attributes.getString(R.styleable.LoadingView_message)
-                ?: context.getString(R.string.api_error)
-        )
-        setRetryButton(
-            attributes.getString(R.styleable.LoadingView_retryButton)
-                ?: context.getString(R.string.retry)
-        )
+        binding.message.text = attributes.getString(R.styleable.LoadingView_message)
+            .getOrDefault(context.getString(R.string.api_error))
+
+        binding.retry.text = attributes.getString(R.styleable.LoadingView_retryButton)
+            .getOrDefault(context.getString(R.string.retry))
 
         binding.retry.setOnClickListener(this)
 
@@ -40,66 +39,31 @@ class LoadingView @JvmOverloads constructor(
     }
 
     /**
-     * 顯示/隱藏讀取
-     *
-     * @param loading 顯示/隱藏
-     */
-    fun toggleLoading(loading: Boolean) {
-        isVisible = loading
-        binding.progress.isVisible = loading
-        binding.error.isVisible = false
-    }
-
-    /**
-     * 顯示/隱藏錯誤UI
-     *
-     * @param error 顯示/隱藏
-     */
-    fun toggleError(error: Boolean) {
-        isVisible = error
-        binding.progress.isVisible = false
-        binding.error.isVisible = error
-    }
-
-    /**
      * 顯示/隱藏讀取與錯誤UI
      *
      * @param loading 顯示/隱藏讀取
      * @param error 顯示/隱藏錯誤UI
-     */
-    fun toggle(loading: Boolean = false, error: Boolean = false) {
-        toggleLoading(loading)
-        toggleError(error)
-    }
-
-    /**
-     * 設置訊息
-     *
      * @param message 訊息
+     * @param buttonName 按鈕名稱
      */
-    fun setMessage(message: String) {
-        binding.message.text = message
-    }
-
-    /**
-     * 設置重試按鈕名稱
-     *
-     * @param name 名稱
-     */
-    fun setRetryButton(name: String) {
-        binding.retry.text = name
-    }
-
-    /**
-     * 重試
-     */
-    fun retry(action: () -> Unit) {
-        retry = action
+    fun toggle(
+        loading: Boolean = false,
+        error: Boolean = false,
+        message: String? = null,
+        buttonName: String? = null,
+        retry: (() -> Unit)? = null
+    ) {
+        isVisible = loading || error
+        binding.progress.isVisible = loading
+        binding.error.isVisible = error
+        if (!isNullOrEmpty(message)) binding.message.text = message
+        if (!isNullOrEmpty(buttonName)) binding.retry.text = buttonName
+        _retry = retry
     }
 
     override fun onClick(v: View?) {
         hideKeyboard(context, v)
         if (v != binding.retry) return
-        retry?.invoke()
+        _retry?.invoke()
     }
 }

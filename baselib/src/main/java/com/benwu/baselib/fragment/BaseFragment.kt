@@ -6,14 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.repeatOnLifecycle
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.utils.IUiInit
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
@@ -61,12 +56,4 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
         loadingDialog.toggle(false)
     }
     //endregion
-
-    protected fun viewScope(scope: suspend CoroutineScope.() -> Unit) {
-        viewLifecycleOwner.lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                scope.invoke(this)
-            }
-        }
-    }
 }

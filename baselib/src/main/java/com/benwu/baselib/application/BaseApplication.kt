@@ -4,6 +4,7 @@ import android.app.ActivityManager
 import android.app.Application
 import android.graphics.Color
 import androidx.activity.SystemBarStyle
+import com.benwu.baselib.extension.getOrDefault
 import com.benwu.baselib.extension.isNullOrEmpty
 
 abstract class BaseApplication : Application() {
@@ -22,7 +23,7 @@ abstract class BaseApplication : Application() {
         topActivityName = if (isNullOrEmpty(tasks)) {
             homeActivityName
         } else {
-            tasks[0].taskInfo.topActivity?.className ?: homeActivityName
+            tasks[0].taskInfo.topActivity?.className.getOrDefault(homeActivityName)
         }
     }
 

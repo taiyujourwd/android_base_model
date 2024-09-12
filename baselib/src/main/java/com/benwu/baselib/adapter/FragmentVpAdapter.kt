@@ -7,7 +7,7 @@ import com.benwu.baselib.extension.refresh
 
 class FragmentVpAdapter : FragmentStateAdapter {
 
-    private var _fragmentList = arrayListOf<Fragment>()
+    private var _fragmentList = mutableListOf<Fragment>()
 
     constructor(activity: AppCompatActivity, fragmentList: List<Fragment>) : super(activity) {
         _fragmentList.refresh(fragmentList)

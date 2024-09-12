@@ -9,15 +9,12 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.Matrix
 import android.graphics.drawable.Drawable
 import android.location.Geocoder
-import android.location.Location
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Build
@@ -36,10 +33,10 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.annotation.AttrRes
-import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.MenuRes
 import androidx.annotation.StyleRes
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.appcompat.widget.AppCompatImageView
@@ -52,6 +49,10 @@ import androidx.core.os.bundleOf
 import androidx.exifinterface.media.ExifInterface
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -78,7 +79,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedInputStream
 import java.io.File
@@ -96,23 +99,17 @@ import java.util.Stack
  *
  * @param shapeAppearance 形狀
  * @param shapeAppearanceOverlay 覆蓋形狀
- * @param fillColor 填色
- * @param strokeWidth 框寬度
- * @param strokeColor 框顏色
  * @return MaterialShapeDrawable
  */
 fun createMaterialShapeDrawable(
     context: Context,
     @StyleRes shapeAppearance: Int = com.google.android.material.R.style.ShapeAppearance_Material3_Corner_None,
     @StyleRes shapeAppearanceOverlay: Int = 0,
-    @ColorInt fillColor: Int = Color.TRANSPARENT,
-    strokeWidth: Float = 0f,
-    @ColorInt strokeColor: Int = Color.TRANSPARENT
+    drawable: MaterialShapeDrawable.() -> Unit
 ) = MaterialShapeDrawable(
     ShapeAppearanceModel.builder(context, shapeAppearance, shapeAppearanceOverlay).build()
 ).also {
-    it.fillColor = ColorStateList.valueOf(fillColor)
-    it.setStroke(strokeWidth.dp, strokeColor)
+    drawable(it)
 }
 
 /**
@@ -134,27 +131,13 @@ fun View.setClipBackground(drawable: Drawable?) {
  * @return toolbar
  */
 fun MaterialToolbar.init(
-    title: String? = null,
-    @MenuRes menuRes: Int = 0,
-    action: (() -> Unit)? = null
-) = also { toolbar ->
-    toolbar.title = title
-    toolbar.initMenu(menuRes)
-    toolbar.setNavigationOnClickListener { action?.invoke() }
-}
-
-/**
- * 初始化toolbar
- *
- * @param title 標題
- * @return toolbar
- */
-fun MaterialToolbar.init(
     activity: BaseActivity<*>,
     title: String? = null,
     @MenuRes menuRes: Int = 0
-) = init(title, menuRes) {
-    activity.onBack()
+) = also {
+    if (!isNullOrEmpty(title)) it.title = title
+    it.initMenu(menuRes)
+    it.setNavigationOnClickListener { activity.onBack() }
 }
 
 /**
@@ -191,7 +174,7 @@ fun hideKeyboard(context: Context, view: View?) {
 /**
  * 更新項目
  */
-fun <T> ListAdapter<T, ViewHolder>.updateList(update: (ArrayList<T>) -> Unit) {
+fun <T> ListAdapter<T, ViewHolder>.updateList(update: (MutableList<T>) -> Unit) {
     submitList(ArrayList(currentList).also { update(it) })
 }
 //endregion
@@ -281,12 +264,10 @@ fun ViewPager2.init(
  */
 private fun ViewPager2.init(
     adapter: RecyclerView.Adapter<*>,
-    offscreenPageLimit: Int,
     orientation: Int,
     direction: Int
 ) = also {
     it.adapter = adapter
-    it.offscreenPageLimit = offscreenPageLimit
     it.orientation = orientation
     it.layoutDirection = direction
 }
@@ -303,7 +284,7 @@ fun ViewPager2.init(
     fragmentList: List<Fragment>,
     @ViewPager2.Orientation orientation: Int = ViewPager2.ORIENTATION_HORIZONTAL,
     direction: Int = ViewPager2.LAYOUT_DIRECTION_LTR
-) = init(FragmentVpAdapter(activity, fragmentList), fragmentList.size, orientation, direction)
+) = init(FragmentVpAdapter(activity, fragmentList), orientation, direction)
 
 /**
  * 初始化viewPager + fragment(fragment)
@@ -317,7 +298,7 @@ fun ViewPager2.init(
     fragmentList: List<Fragment>,
     @ViewPager2.Orientation orientation: Int = ViewPager2.ORIENTATION_HORIZONTAL,
     direction: Int = ViewPager2.LAYOUT_DIRECTION_LTR
-) = init(FragmentVpAdapter(fragment, fragmentList), fragmentList.size, orientation, direction)
+) = init(FragmentVpAdapter(fragment, fragmentList), orientation, direction)
 //endregion
 
 //region tab
@@ -551,7 +532,8 @@ fun Throwable.debugPrint() {
  * @param message 訊息
  * @param interval 顯示多長的時間
  */
-fun showToast(context: Context, message: String, interval: Int = Toast.LENGTH_SHORT) {
+fun showToast(context: Context, message: String?, interval: Int = Toast.LENGTH_SHORT) {
+    if (isNullOrEmpty(message)) return
     Toast.makeText(context, message, interval).show()
 }
 
@@ -564,12 +546,14 @@ fun showToast(context: Context, message: String, interval: Int = Toast.LENGTH_SH
  */
 fun showSnackbar(
     view: View,
-    message: String,
+    message: String?,
     actionName: String? = null,
     interval: Int = Toast.LENGTH_SHORT,
     action: ((View) -> Unit)? = null
 ) {
-    Snackbar.make(view, message, interval)
+    if (isNullOrEmpty(message)) return
+
+    Snackbar.make(view, message!!, interval)
         .setAction(actionName) { action?.invoke(it) }
         .show()
 }
@@ -583,14 +567,16 @@ fun showSnackbar(
  */
 fun showNotice(
     context: Context,
-    message: String,
+    message: String?,
     title: String = context.getString(R.string.notice),
     positive: String = context.getString(R.string.sure),
     negative: String = "",
     neutral: String = "",
     isCancelable: Boolean = false,
     action: ((action: Int) -> Unit)? = null
-) {
+): AlertDialog? {
+    if (isNullOrEmpty(message)) return null
+
     val dialog = MaterialAlertDialogBuilder(context)
         .setTitle(title)
         .setMessage(message)
@@ -605,7 +591,7 @@ fun showNotice(
         dialog.setNeutralButton(neutral) { _, which -> action?.invoke(which) }
     }
 
-    dialog.show()
+    return dialog.show()
 }
 
 /**
@@ -616,13 +602,15 @@ fun showNotice(
  */
 fun showPicker(
     context: Context,
-    items: Array<String>,
+    items: Array<String>?,
     title: String,
     select: (position: Int, data: String) -> Unit
-) {
-    MaterialAlertDialogBuilder(context)
+): AlertDialog? {
+    if (isNullOrEmpty(items)) return null
+
+    return MaterialAlertDialogBuilder(context)
         .setTitle(title)
-        .setItems(items) { _, which -> select(which, items[which]) }
+        .setItems(items) { _, which -> select(which, items!![which]) }
         .show()
 }
 
@@ -635,17 +623,19 @@ fun showPicker(
  */
 fun showSingleChoice(
     context: Context,
-    items: Array<String>,
+    items: Array<String>?,
     title: String,
     selectItem: Int = 0,
     select: (position: Int, data: String) -> Unit
-) {
+): AlertDialog? {
+    if (isNullOrEmpty(items)) return null
+
     var position = 0
 
-    MaterialAlertDialogBuilder(context)
+    return MaterialAlertDialogBuilder(context)
         .setTitle(title)
         .setNegativeButton(R.string.cancel) { _, _ -> }
-        .setPositiveButton(R.string.sure) { _, _ -> select(position, items[position]) }
+        .setPositiveButton(R.string.sure) { _, _ -> select(position, items!![position]) }
         .setSingleChoiceItems(items, selectItem) { _, which -> position = which }
         .show()
 }
@@ -659,12 +649,14 @@ fun showSingleChoice(
  */
 fun showMultiChoice(
     context: Context,
-    items: Array<String>,
+    items: Array<String>?,
     title: String,
     selectItems: BooleanArray,
     select: (selectItems: BooleanArray) -> Unit
-) {
-    MaterialAlertDialogBuilder(context)
+): AlertDialog? {
+    if (isNullOrEmpty(items)) return null
+
+    return MaterialAlertDialogBuilder(context)
         .setTitle(title)
         .setNegativeButton(R.string.cancel) { _, _ -> }
         .setPositiveButton(R.string.sure) { _, _ -> select(selectItems) }
@@ -704,14 +696,36 @@ fun <T, V : ViewBinding> showBottomSheetDialogFragment(
 
 //region api
 /**
- * 處理api例外狀況
+ * api處理例外狀況
+ *
+ * @return api狀態
  */
 suspend fun <T> safeApiCall(apiCall: suspend () -> T) = withContext(Dispatchers.IO) {
     try {
         ApiState.Success(apiCall())
     } catch (throwable: Throwable) {
+        throwable.debugPrint()
         ApiState.Failure(throwable)
     }
+}
+
+/**
+ * api呼叫成功後續處理
+ *
+ * @return api狀態
+ */
+suspend fun <T> ApiState<T>.success(dbCall: suspend (data: T) -> Unit) = also {
+    if (it is ApiState.Success) dbCall(it.data)
+}
+
+/**
+ * api呼叫失敗後續處理
+ *
+ * @return api狀態
+ */
+suspend fun <T> ApiState<T>.failure(dbCall: suspend () -> T) = let {
+    if (it !is ApiState.Failure) return@let it
+    withContext(Dispatchers.IO) { ApiState.Failure(it.throwable, dbCall()) }
 }
 //endregion
 
@@ -766,31 +780,31 @@ fun isPermissionRationale(
 /**
  * 權限遭拒提示視窗
  */
-fun showPermissionDeniedNotice(context: Context, permissionName: String) {
+fun showPermissionDeniedNotice(
+    context: Context,
+    permissionName: String,
+    action: ((action: Int) -> Unit)? = null
+) {
     showNotice(
         context,
         context.getString(R.string.permission_denied, permissionName),
         positive = context.getString(R.string.setting),
         negative = context.getString(R.string.cancel)
     ) {
-        if (it != DialogInterface.BUTTON_POSITIVE) return@showNotice
-        openSetting(context)
+        when (it) {
+            DialogInterface.BUTTON_POSITIVE -> {
+                openSetting(context)
+            }
+
+            else -> {
+                action?.invoke(it)
+            }
+        }
     }
 }
 //endregion
 
 //region location
-/**
- * 計算距離
- *
- * @param lat 緯度
- * @param lon 經度
- * @return 距離
- */
-fun Location.distanceTo(lat: Double, lon: Double) = FloatArray(1).also {
-    Location.distanceBetween(latitude, longitude, lat, lon, it)
-}[0].toInt()
-
 /**
  * 經緯度轉縣市
  *
@@ -1065,7 +1079,6 @@ fun downloadNotice(
 //region 推播
 const val CHANNEL_ID = "channelID"
 const val CHANNEL_NAME = "channelName"
-const val NOTIFICATION_ID = 65536
 
 /**
  * 初始化推播
@@ -1139,7 +1152,7 @@ fun sendNotification(
 
     if (isPermissionsGranted(context, Manifest.permission.POST_NOTIFICATIONS)) {
         manager.notify(
-            NOTIFICATION_ID,
+            System.currentTimeMillis().toInt(),
             initNotification(context, title, content, smallIconRes, badge, intent, init)
         )
     }
@@ -1299,7 +1312,43 @@ fun getCertificates(sha1: String) {
     val sha1s = sha1.split(':')
     val data = ByteArray(sha1s.size)
     sha1s.indices.forEach { data[it] = sha1s[it].toInt(16).toByte() }
-    debugPrintE("keyHash", data.toBase64() ?: "")
+    debugPrintE("keyHash", data.toBase64().getOrDefault(""))
+}
+
+/**
+ * 若為空取得預設值
+ *
+ * @param default 預設值
+ * @return 不為空的值
+ */
+fun <T> T?.getOrDefault(default: T) = if (!isNullOrEmpty(this)) this!! else default
+
+/**
+ * 資料線呈
+ *
+ * @param state 生命週期階段
+ */
+fun LifecycleOwner.dataScope(
+    state: Lifecycle.State = Lifecycle.State.CREATED,
+    scope: suspend CoroutineScope.() -> Unit
+) {
+    lifecycleScope.launch {
+        repeatOnLifecycle(state, scope)
+    }
+}
+
+/**
+ * 畫面線呈
+ *
+ * @param state 生命週期階段
+ */
+fun LifecycleOwner.viewScope(
+    state: Lifecycle.State = Lifecycle.State.RESUMED,
+    scope: suspend CoroutineScope.() -> Unit
+) {
+    lifecycleScope.launch {
+        repeatOnLifecycle(state, scope)
+    }
 }
 
 /**
