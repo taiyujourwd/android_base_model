@@ -78,7 +78,7 @@ class RepoDataStoreDemoActivity : BaseActivity<IncludeRepoBinding>(),
                     binding.loading.toggle(
                         it.isLoading && !binding.srl.isRefreshing,
                         it.isError,
-                        retry = this@RepoDataStoreDemoActivity::onRefresh
+                        retry = this@RepoDataStoreDemoActivity::getData
                     )
                 }
             }

@@ -60,7 +60,7 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
                     binding.loading.toggle(
                         it.isLoading && !binding.srl.isRefreshing,
                         it.isError,
-                        retry = this@RepoApiDemoActivity::onRefresh
+                        retry = this@RepoApiDemoActivity::getData
                     )
                 }
             }
