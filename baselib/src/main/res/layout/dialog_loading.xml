@@ -12,7 +12,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:lottie_autoPlay="true"
-        app:lottie_colorFilter="?colorOnSurface"
+        app:lottie_colorFilter="@android:color/white"
         app:lottie_loop="true"
         app:lottie_rawRes="@raw/loading" />
 
