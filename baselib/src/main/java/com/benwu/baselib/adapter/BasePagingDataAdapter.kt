@@ -38,19 +38,19 @@ abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: Dif
         _mContext = recyclerView.context
 
         mRecyclerView.layoutManager?.also {
-            if (it is GridLayoutManager) {
-                it.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
-                    override fun getSpanSize(position: Int): Int {
-                        val viewType = getItemViewType(position)
+            if (it !is GridLayoutManager) return@also
 
-                        return when (viewType) {
-                            VIEW_TYPE_DATA_EMPTY, VIEW_TYPE_FOOTER -> {
-                                it.spanCount
-                            }
+            it.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    val viewType = getItemViewType(position)
 
-                            else -> {
-                                1
-                            }
+                    return when (viewType) {
+                        VIEW_TYPE_DATA_EMPTY, VIEW_TYPE_FOOTER -> {
+                            it.spanCount
+                        }
+
+                        else -> {
+                            1
                         }
                     }
                 }
@@ -92,6 +92,12 @@ abstract class BasePagingDataAdapter<T : Any, V : ViewBinding>(diffCallback: Dif
             bindView(binding, position, getItem(position), payloads)
             bindOnClickListener(holder, binding)
         }
+    }
+
+    override fun getItemCount() = if (isNullOrEmpty(snapshot().items)) {
+        1
+    } else {
+        super.getItemCount()
     }
 
     override fun getItemViewType(position: Int) = if (isNullOrEmpty(snapshot().items)) {

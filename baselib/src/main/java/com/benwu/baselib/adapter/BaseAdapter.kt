@@ -73,6 +73,12 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
         }
     }
 
+    override fun getItemCount() = if (isNullOrEmpty(currentList)) {
+        1
+    } else {
+        super.getItemCount()
+    }
+
     override fun getItemViewType(position: Int) = if (isNullOrEmpty(currentList)) {
         VIEW_TYPE_DATA_EMPTY
     } else {
