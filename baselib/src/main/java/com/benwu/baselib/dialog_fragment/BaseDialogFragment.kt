@@ -64,6 +64,7 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        isCancelable = false
 
         mWindow?.setBackgroundDrawable(null)
         mWindow?.setLayout(width, height)
