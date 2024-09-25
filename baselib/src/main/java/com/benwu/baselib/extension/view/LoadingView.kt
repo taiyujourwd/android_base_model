@@ -1,8 +1,10 @@
 package com.benwu.baselib.extension.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
@@ -37,6 +39,9 @@ class LoadingView @JvmOverloads constructor(
 
         attributes.recycle()
     }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent?) = true
 
     /**
      * 顯示/隱藏讀取與錯誤UI
