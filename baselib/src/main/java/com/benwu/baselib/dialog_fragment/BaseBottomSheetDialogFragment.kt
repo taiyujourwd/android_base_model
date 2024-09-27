@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatDialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
+import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -20,7 +21,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDialogFragment(),
     IUiInit<V>, IDialogResult<T> {
 
-    val loadingDialog by lazy { mActivity.loadingDialog }
+    val loadingDialog by lazy { LoadingDialog(mActivity) }
 
     private lateinit var _mActivity: BaseActivity<*>
     private lateinit var _binding: V

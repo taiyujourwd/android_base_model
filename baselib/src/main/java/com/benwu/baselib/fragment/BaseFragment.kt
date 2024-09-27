@@ -8,11 +8,12 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
+import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.utils.IUiInit
 
 abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
-    val loadingDialog by lazy { mActivity.loadingDialog }
+    val loadingDialog by lazy { LoadingDialog(mActivity) }
 
     private lateinit var _mActivity: BaseActivity<*>
     private lateinit var _binding: V

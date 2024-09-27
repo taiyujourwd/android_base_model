@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
@@ -35,6 +36,26 @@ abstract class BaseAdapter<T, V : ViewBinding>(diffCallback: DiffUtil.ItemCallba
 
         _mRecyclerView = recyclerView
         _mContext = recyclerView.context
+
+        mRecyclerView.layoutManager?.also {
+            if (it !is GridLayoutManager) return@also
+
+            it.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    val viewType = getItemViewType(position)
+
+                    return when (viewType) {
+                        VIEW_TYPE_DATA_EMPTY -> {
+                            it.spanCount
+                        }
+
+                        else -> {
+                            1
+                        }
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
