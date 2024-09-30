@@ -1,33 +1,22 @@
 package com.benwu.baselib.dialog
 
-import android.view.KeyEvent
+import android.content.Context
 import android.view.LayoutInflater
 import androidx.appcompat.app.AppCompatDialog
-import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.databinding.DialogLoadingBinding
 
-class LoadingDialog(private val activity: BaseActivity<*>) {
+class LoadingDialog(private val context: Context) {
 
     private val binding by lazy {
-        DialogLoadingBinding.inflate(LayoutInflater.from(activity), null, false)
+        DialogLoadingBinding.inflate(LayoutInflater.from(context), null, false)
     }
 
     private val dialog by lazy {
-        AppCompatDialog(activity).also {
+        AppCompatDialog(context).also {
             it.setContentView(binding.root)
-
             it.setCanceledOnTouchOutside(false)
             it.setCancelable(false)
             it.window?.setBackgroundDrawable(null)
-
-            it.setOnKeyListener { _, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
-                    activity.onBack()
-                    return@setOnKeyListener true
-                }
-
-                false
-            }
         }
     }
 
