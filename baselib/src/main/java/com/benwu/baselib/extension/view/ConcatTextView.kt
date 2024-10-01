@@ -28,7 +28,7 @@ class ConcatTextView @JvmOverloads constructor(
     }
 
     fun setConcatText(
-        text: CharSequence,
+        text: CharSequence?,
         prefixText: String = _prefixText,
         suffixText: String = _suffixText
     ) {
