@@ -1,6 +1,6 @@
 [versions]
 #android
-agp = "8.6.1"
+agp = "8.7.0"
 
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -16,7 +16,7 @@ swiperefreshlayout = "1.1.0"
 viewpager2 = "1.1.0"
 
 #kotlin
-kotlin = "1.9.0"
+kotlin = "1.9.24"
 kotlinCore = "1.13.1"
 
 #hilt
@@ -26,7 +26,7 @@ hilt = "2.51.1"
 room = "2.6.1"
 
 #lifecycle
-lifecycle = "2.8.5"
+lifecycle = "2.8.6"
 
 #dataStore
 datastorePreferences = "1.1.1"
@@ -51,7 +51,7 @@ glide = "4.16.0"
 lottie = "6.4.1"
 
 #navigation
-nav = "2.8.0"
+nav = "2.8.1"
 
 #適配
 androidAutoSize = "v1.2.1"
