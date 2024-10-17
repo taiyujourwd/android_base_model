@@ -5,36 +5,39 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.benwu.androidbase.adapter.RepoRvAdapter
-import com.benwu.androidbase.databinding.IncludeRepoBinding
+import com.benwu.androidbase.databinding.ActivityRepoApiDemoBinding
 import com.benwu.androidbase.dialog_fragment.RepoDetailDialogFragment
 import com.benwu.androidbase.viewmodel.RepoViewModel
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.extension.init
+import com.benwu.baselib.extension.lifecycleScope
 import com.benwu.baselib.extension.showBottomSheetDialogFragment
-import com.benwu.baselib.extension.viewScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
+class RepoApiDemoActivity : BaseActivity<ActivityRepoApiDemoBinding>(),
     SwipeRefreshLayout.OnRefreshListener {
 
-    private val viewModel: RepoViewModel by viewModels()
+    private val repoViewModel by viewModels<RepoViewModel>()
 
-    private lateinit var adapter: RepoRvAdapter
+    private lateinit var repoRvAdapter: RepoRvAdapter
 
-    override fun bindViewBinding(inflater: LayoutInflater, container: ViewGroup?) =
-        IncludeRepoBinding.inflate(inflater)
+    override fun bindViewBinding(
+        inflater: LayoutInflater,
+        container: ViewGroup?
+    ) = ActivityRepoApiDemoBinding.inflate(inflater)
 
     override fun getBundle(bundle: Bundle) {
         //
     }
 
     override fun initView() {
-        binding.toolbar.init(mActivity, "Retrofit")
+        binding.toolbar.init(mActivity)
 
         initRepoRv()
 
@@ -42,19 +45,19 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
     }
 
     override fun getData() {
-        viewModel.getRepoList()
+        repoViewModel.getRepoList()
     }
 
     override fun observer() {
-        viewScope {
+        lifecycleScope(Lifecycle.State.RESUMED) {
             launch {
-                viewModel.repoUiState.collectLatest { repoUiState ->
-                    repoUiState.repoList?.also { adapter.submitList(it) }
+                repoViewModel.repoSharedFlow.collectLatest { state ->
+                    state.repoList?.also { repoRvAdapter.submitList(it) }
                 }
             }
 
             launch {
-                viewModel.baseUiState.collectLatest {
+                repoViewModel.baseStateFlow.collectLatest {
                     if (binding.srl.isRefreshing) binding.srl.isRefreshing = it.isLoading
 
                     binding.loading.toggle(
@@ -76,10 +79,10 @@ class RepoApiDemoActivity : BaseActivity<IncludeRepoBinding>(),
     }
 
     private fun initRepoRv() {
-        adapter = RepoRvAdapter()
-        binding.rv.init(adapter)
+        repoRvAdapter = RepoRvAdapter()
+        binding.rv.init(repoRvAdapter)
 
-        adapter.setOnItemClickListener { _, _, item ->
+        repoRvAdapter.setOnItemClickListener { _, _, item ->
             item?.also {
                 showBottomSheetDialogFragment(
                     RepoDetailDialogFragment.newInstance(it),

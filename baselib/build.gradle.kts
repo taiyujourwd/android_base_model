@@ -24,13 +24,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
-
     buildFeatures {
         buildConfig = true
         viewBinding = true
@@ -49,8 +48,8 @@ dependencies {
     api(libs.androidx.fragment.ktx)
     api(libs.androidx.constraintlayout)
     api(libs.androidx.recyclerview)
-    api(libs.androidx.viewpager2)
     api(libs.androidx.swiperefreshlayout)
+    api(libs.androidx.viewpager2)
 
     // lifecycle
     api(libs.androidx.lifecycle.viewmodel.ktx)
@@ -59,9 +58,6 @@ dependencies {
 
     // dataStore
     api(libs.androidx.datastore.preferences)
-
-    // paging
-    api(libs.androidx.paging.runtime.ktx)
 
     // retrofit
     api(libs.retrofit)

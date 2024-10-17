@@ -14,7 +14,7 @@ class BaseResultLauncher<I, O>(
     contract: ActivityResultContract<I, O>
 ) {
 
-    private var launcher: ActivityResultLauncher<I>
+    private val launcher: ActivityResultLauncher<I>
 
     private lateinit var callback: ActivityResultCallback<O>
 
@@ -32,7 +32,7 @@ class BaseResultLauncher<I, O>(
 
 class PermissionsResultLauncher(caller: ActivityResultCaller) {
 
-    private var launcher: ActivityResultLauncher<Array<String>>
+    private val launcher: ActivityResultLauncher<Array<String>>
 
     private lateinit var activity: AppCompatActivity
     private lateinit var permissions: Array<String>

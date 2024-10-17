@@ -155,10 +155,10 @@ fun MaterialToolbar.initMenu(@MenuRes menuRes: Int) = also {
 /**
  * 新增輸入限制
  *
- * @param newInputFilter 輸入限制
+ * @param inputFilters 輸入限制
  */
-fun TextInputEditText.addFilter(newInputFilter: InputFilter) {
-    filters = filters.toMutableList().also { it.add(newInputFilter) }.toTypedArray()
+fun TextInputEditText.addFilters(vararg inputFilters: InputFilter) {
+    filters = filters.toMutableList().apply { inputFilters.forEach { add(it) } }.toTypedArray()
 }
 
 /**
@@ -999,8 +999,8 @@ suspend fun File.correctImageRotation() = withContext(Dispatchers.IO) {
             bitmap,
             0,
             0,
-            bitmap.getWidth(),
-            bitmap.getHeight(),
+            bitmap.width,
+            bitmap.height,
             Matrix().also { it.postRotate(rotation) },
             true
         )
@@ -1324,26 +1324,12 @@ fun getCertificates(sha1: String) {
 fun <T> T?.getOrDefault(default: T) = if (!isNullOrEmpty(this)) this!! else default
 
 /**
- * 資料線呈
+ * 生命週期線呈
  *
  * @param state 生命週期階段
  */
-fun LifecycleOwner.dataScope(
-    state: Lifecycle.State = Lifecycle.State.CREATED,
-    scope: suspend CoroutineScope.() -> Unit
-) {
-    lifecycleScope.launch {
-        repeatOnLifecycle(state, scope)
-    }
-}
-
-/**
- * 畫面線呈
- *
- * @param state 生命週期階段
- */
-fun LifecycleOwner.viewScope(
-    state: Lifecycle.State = Lifecycle.State.RESUMED,
+fun LifecycleOwner.lifecycleScope(
+    state: Lifecycle.State,
     scope: suspend CoroutineScope.() -> Unit
 ) {
     lifecycleScope.launch {

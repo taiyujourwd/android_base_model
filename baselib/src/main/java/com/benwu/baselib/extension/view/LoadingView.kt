@@ -9,7 +9,7 @@ import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import com.benwu.baselib.R
-import com.benwu.baselib.databinding.IncludeLoadingBinding
+import com.benwu.baselib.databinding.MergeLoadingBinding
 import com.benwu.baselib.extension.getOrDefault
 import com.benwu.baselib.extension.hideKeyboard
 import com.benwu.baselib.extension.isNullOrEmpty
@@ -21,8 +21,7 @@ class LoadingView @JvmOverloads constructor(
     defStyleRes: Int = 0
 ) : ConstraintLayout(context, attrs, defStyleAttr, defStyleRes), View.OnClickListener {
 
-    private val binding: IncludeLoadingBinding =
-        IncludeLoadingBinding.inflate(LayoutInflater.from(context), this)
+    private val binding = MergeLoadingBinding.inflate(LayoutInflater.from(context), this)
 
     private var _retry: (() -> Unit)? = null
 

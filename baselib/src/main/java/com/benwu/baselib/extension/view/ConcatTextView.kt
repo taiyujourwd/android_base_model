@@ -29,14 +29,14 @@ class ConcatTextView @JvmOverloads constructor(
 
     fun setConcatText(
         text: CharSequence?,
-        prefixText: String = _prefixText,
-        suffixText: String = _suffixText
+        prefixText: String? = null,
+        suffixText: String? = null
     ) {
         if (isNullOrEmpty(text)) {
             this.text = text
             return
         }
 
-        this.text = TextUtils.concat(prefixText, text, suffixText)
+        this.text = TextUtils.concat(prefixText ?: _prefixText, text, suffixText ?: _suffixText)
     }
 }

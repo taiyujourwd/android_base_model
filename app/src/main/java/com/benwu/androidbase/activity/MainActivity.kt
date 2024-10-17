@@ -57,8 +57,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
                 "Retrofit" -> openActivity(mActivity, RepoApiDemoActivity::class.java)
 
-                "Paging 3" -> openActivity(mActivity, RepoPagingDemoActivity::class.java)
-
                 "DataStore" -> openActivity(mActivity, RepoDataStoreDemoActivity::class.java)
             }
         }

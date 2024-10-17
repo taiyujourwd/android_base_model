@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">AndroidBase</string>
+    <string name="perPage">perPage</string>
 </resources>

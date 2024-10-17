@@ -1,9 +1,8 @@
 package com.benwu.androidbase.data
 
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import com.benwu.baselib.data.BaseDiffItemData
+import com.benwu.baselib.extension.getOrDefault
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -11,19 +10,17 @@ data class Repo(
     @SerializedName("items")
     val items: List<Item>? = null
 ) {
-    @Entity(tableName = "repo")
     @Parcelize
     data class Item(
-        @PrimaryKey
         @SerializedName("id")
-        val id: Int,
+        val id: Int? = null,
         @SerializedName("name")
-        val name: String,
+        val name: String? = null,
         @SerializedName("description")
-        val description: String?,
+        val description: String? = null,
         @SerializedName("stargazers_count")
-        val starCount: Int
+        val starCount: Int? = null
     ) : BaseDiffItemData, Parcelable {
-        override fun getKey() = id
+        override fun getKey() = id.getOrDefault(0)
     }
 }

@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-data class BaseUiState(
+data class BaseStateFlow(
     val loadingCount: Int = 0,
     val errorCount: Int = 0
 ) {
@@ -17,11 +17,11 @@ data class BaseUiState(
 
 open class BaseViewModel : ViewModel() {
 
-    private val _baseUiState = MutableStateFlow(BaseUiState())
-    val baseUiState = _baseUiState.asStateFlow()
+    private val _baseStateFlow = MutableStateFlow(BaseStateFlow())
+    val baseStateFlow = _baseStateFlow.asStateFlow()
 
     fun updateLoading(loadingCount: Int) = viewModelScope.launch {
-        _baseUiState.update {
+        _baseStateFlow.update {
             it.copy(
                 loadingCount = it.loadingCount + loadingCount,
                 errorCount = if (it.loadingCount == 0) 0 else it.errorCount
@@ -30,6 +30,6 @@ open class BaseViewModel : ViewModel() {
     }
 
     fun updateError(errorCount: Int) = viewModelScope.launch {
-        _baseUiState.update { it.copy(errorCount = it.errorCount + errorCount) }
+        _baseStateFlow.update { it.copy(errorCount = it.errorCount + errorCount) }
     }
 }
