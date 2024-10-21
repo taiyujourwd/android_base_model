@@ -1,6 +1,6 @@
 [versions]
 #android
-agp = "8.7.1"
+agp = "8.6.1"
 
 appcompat = "1.7.0"
 material = "1.12.0"
@@ -16,11 +16,11 @@ swiperefreshlayout = "1.1.0"
 viewpager2 = "1.1.0"
 
 #kotlin
-kotlin = "1.9.24"
+kotlin = "2.0.21"
 kotlinCore = "1.13.1"
 
 #ksp
-ksp = "2.0.20-1.0.25"
+ksp = "2.0.21-1.0.25"
 
 #hilt
 hilt = "2.52"
