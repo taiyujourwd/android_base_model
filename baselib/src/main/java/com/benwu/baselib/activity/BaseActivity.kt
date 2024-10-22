@@ -60,7 +60,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
 
     override fun onResume() {
         super.onResume()
-        getData()
+        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroy() {

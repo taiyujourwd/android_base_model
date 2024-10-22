@@ -18,6 +18,8 @@ interface IUiInit<V : ViewBinding> : View.OnClickListener {
 
     val binding: V
 
+    val isAutoGetDataEnable get() = true
+
     //region 初始化
     /**
      * 綁定layout

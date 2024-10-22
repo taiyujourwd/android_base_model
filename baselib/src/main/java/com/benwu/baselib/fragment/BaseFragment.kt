@@ -49,7 +49,7 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
 
     override fun onResume() {
         super.onResume()
-        getData()
+        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroyView() {

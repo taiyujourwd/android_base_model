@@ -79,7 +79,7 @@ abstract class BaseDialogFragment<T, V : ViewBinding> : AppCompatDialogFragment(
 
     override fun onResume() {
         super.onResume()
-        getData()
+        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroyView() {

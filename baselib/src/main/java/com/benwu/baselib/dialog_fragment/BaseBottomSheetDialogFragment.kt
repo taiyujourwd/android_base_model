@@ -91,7 +91,7 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
 
     override fun onResume() {
         super.onResume()
-        getData()
+        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroyView() {
