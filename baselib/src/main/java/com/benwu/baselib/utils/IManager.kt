@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatDialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
@@ -18,7 +19,7 @@ interface IUiInit<V : ViewBinding> : View.OnClickListener {
 
     val binding: V
 
-    val isAutoGetDataEnable get() = true
+    val dataWithLifecycleState get() = Lifecycle.State.RESUMED
 
     //region 初始化
     /**

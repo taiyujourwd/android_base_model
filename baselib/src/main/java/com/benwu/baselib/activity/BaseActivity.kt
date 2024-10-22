@@ -12,6 +12,7 @@ import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.application.BaseApplication
 import com.benwu.baselib.dialog.LoadingDialog
 import com.benwu.baselib.extension.getIntentWithSingleTop
+import com.benwu.baselib.extension.lifecycleScope
 import com.benwu.baselib.extension.openActivity
 import com.benwu.baselib.utils.IUiInit
 
@@ -44,6 +45,7 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
             intent.extras?.also { getBundle(it) }
             initView()
             observer()
+            lifecycleScope(dataWithLifecycleState) { getData() }
 
             onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
@@ -56,11 +58,6 @@ abstract class BaseActivity<V : ViewBinding> : AppCompatActivity(), IUiInit<V> {
             openActivity(mActivity, _mApplication.getHomeActivity())
             ActivityCompat.finishAffinity(mActivity)
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroy() {

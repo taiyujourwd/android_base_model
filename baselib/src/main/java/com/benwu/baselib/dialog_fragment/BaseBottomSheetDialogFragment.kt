@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.dialog.LoadingDialog
+import com.benwu.baselib.extension.lifecycleScope
 import com.benwu.baselib.utils.IDialogResult
 import com.benwu.baselib.utils.IUiInit
 import com.google.android.material.bottomsheet.BottomSheetBehavior
@@ -85,13 +86,9 @@ abstract class BaseBottomSheetDialogFragment<T, V : ViewBinding> : BottomSheetDi
         arguments?.also { getBundle(it) }
         initView()
         observer()
+        lifecycleScope(dataWithLifecycleState) { getData() }
 
         setOnClickListeners(binding.root)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroyView() {

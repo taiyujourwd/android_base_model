@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.benwu.baselib.activity.BaseActivity
 import com.benwu.baselib.dialog.LoadingDialog
+import com.benwu.baselib.extension.lifecycleScope
 import com.benwu.baselib.utils.IUiInit
 
 abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
@@ -43,13 +44,9 @@ abstract class BaseFragment<V : ViewBinding> : Fragment(), IUiInit<V> {
         arguments?.also { getBundle(it) }
         initView()
         observer()
+        lifecycleScope(dataWithLifecycleState) { getData() }
 
         setOnClickListeners(binding.root)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isAutoGetDataEnable) getData()
     }
 
     override fun onDestroyView() {
