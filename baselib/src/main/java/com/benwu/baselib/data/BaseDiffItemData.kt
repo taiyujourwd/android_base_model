@@ -2,7 +2,7 @@ package com.benwu.baselib.data
 
 interface BaseDiffItemData {
 
-    override fun equals(other: Any?): Boolean
+    val key: Any
 
-    fun getKey(): Any
+    override fun equals(other: Any?): Boolean
 }
