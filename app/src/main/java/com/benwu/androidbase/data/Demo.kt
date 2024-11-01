@@ -6,5 +6,5 @@ data class Demo(
     var title: String,
     var subtitle: String
 ) : BaseDiffItemData {
-    override fun getKey() = title
+    override val key get() = title
 }

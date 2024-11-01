@@ -21,6 +21,6 @@ data class Repo(
         @SerializedName("stargazers_count")
         val starCount: Int? = null
     ) : BaseDiffItemData, Parcelable {
-        override fun getKey() = id.getOrDefault(0)
+        override val key get() = id.getOrDefault(0)
     }
 }

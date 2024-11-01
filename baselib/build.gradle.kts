@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.benwu.baselib"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         minSdk = 26
@@ -50,11 +50,6 @@ dependencies {
     api(libs.androidx.recyclerview)
     api(libs.androidx.swiperefreshlayout)
     api(libs.androidx.viewpager2)
-
-    // lifecycle
-    api(libs.androidx.lifecycle.viewmodel.ktx)
-    api(libs.androidx.lifecycle.livedata.ktx)
-    api(libs.androidx.lifecycle.runtime.ktx)
 
     // dataStore
     api(libs.androidx.datastore.preferences)
