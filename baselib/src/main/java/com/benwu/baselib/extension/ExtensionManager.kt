@@ -264,10 +264,12 @@ fun ViewPager2.init(
  */
 private fun ViewPager2.init(
     adapter: RecyclerView.Adapter<*>,
+    fragmentSize: Int,
     orientation: Int,
     direction: Int
 ) = also {
     it.adapter = adapter
+    it.offscreenPageLimit = fragmentSize
     it.orientation = orientation
     it.layoutDirection = direction
 }
@@ -284,7 +286,7 @@ fun ViewPager2.init(
     fragmentList: List<Fragment>,
     @ViewPager2.Orientation orientation: Int = ViewPager2.ORIENTATION_HORIZONTAL,
     direction: Int = ViewPager2.LAYOUT_DIRECTION_LTR
-) = init(FragmentVpAdapter(activity, fragmentList), orientation, direction)
+) = init(FragmentVpAdapter(activity, fragmentList), fragmentList.size, orientation, direction)
 
 /**
  * 初始化viewPager + fragment(fragment)
@@ -298,7 +300,7 @@ fun ViewPager2.init(
     fragmentList: List<Fragment>,
     @ViewPager2.Orientation orientation: Int = ViewPager2.ORIENTATION_HORIZONTAL,
     direction: Int = ViewPager2.LAYOUT_DIRECTION_LTR
-) = init(FragmentVpAdapter(fragment, fragmentList), orientation, direction)
+) = init(FragmentVpAdapter(fragment, fragmentList), fragmentList.size, orientation, direction)
 //endregion
 
 //region tab
